@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "850090757057",
+    "firebase_url": "https://proyekinformatika-a9b62-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "proyekinformatika-a9b62",
+    "storage_bucket": "proyekinformatika-a9b62.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850090757057:android:d13eeb5f02e7c5c3d1fd40",
+        "android_client_info": {
+          "package_name": "com.example.cobalagi2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "850090757057-ct1ji6rlm4k2hffmdsrhq4m0ohrbbcuv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAusc_gPsgHGWcnPabic0tUwxHqkiJvNpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "850090757057-ct1ji6rlm4k2hffmdsrhq4m0ohrbbcuv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
