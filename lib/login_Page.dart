@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget title() {
-    return const Text('Firebase Auth');
+    return const Text('Login Page');
   }
 
   Widget _entryField(
@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
   ) {
     return TextField(
       controller: controller,
-      decoration: InputDecoration(labelText: title),
+      decoration: InputDecoration(labelText: title,icon: Icon(Icons.email)),
     );
   }
 
@@ -98,44 +98,69 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _submitButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: isLogin
-          ? () => signInWithEmailAndPassword(context)
-          : createUserWithEmailAndPassword,
-      child: Text(isLogin ? 'Login' : 'Register'),
-    );
+    return SizedBox(
+        width: 200,
+        height: 45,
+        child: TextButton(
+          style: TextButton.styleFrom(
+              backgroundColor: Color.fromARGB(255, 45, 106, 79)),
+          onPressed: isLogin
+              ? () => signInWithEmailAndPassword(context)
+              : createUserWithEmailAndPassword,
+          child: Text(
+            'Login',
+            // isLogin ? 'Login' : 'Register',
+            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          ),
+        ));
   }
 
-  Widget _loginOrRegisterButton() {
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          isLogin = !isLogin;
-        });
-      },
-      child: Text(isLogin ? 'Register' : 'Login'),
-    );
-  }
+  // Widget _loginOrRegisterButton() {
+  //   return SizedBox(
+  //       width: 200,
+  //       height: 45,
+  //       child: TextButton(
+  //         onPressed: () {
+  //           setState(() {
+  //             isLogin = !isLogin;
+  //           });
+  //         },
+  //         child: Text(isLogin ? 'Register' : 'Login'),
+  //       ));
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: title(),
-      ),
       body: Container(
         height: double.infinity,
         width: double.infinity,
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+              Color.fromARGB(255, 255, 255, 255),
+              Color.fromARGB(255, 170, 255, 139)
+            ])),
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text(
+              'Login',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'OpenSans',
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold),
+            ),
             _entryField('Email', _emailController),
             _entryField('Password', _passwordController),
             _errorMessage(),
             _submitButton(context),
-            _loginOrRegisterButton(),
+            // _loginOrRegisterButton(),
           ],
         ),
       ),

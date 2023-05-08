@@ -1,3 +1,4 @@
+import 'package:cobalagi2/login_2.dart';
 import 'package:flutter/material.dart';
 import 'auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,11 +25,9 @@ class _SecondPage extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('My App'),
-      ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color.fromARGB(255, 216, 243, 220),
         onTap: onTabTapped,
         currentIndex: _currentIndex,
         items: [
@@ -102,7 +101,6 @@ class DuaPage extends StatelessWidget {
         child: Text('Report'),
       ),
     );
-    
   }
 }
 
@@ -111,8 +109,13 @@ class ThirdPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: Center(
-        child: Text('Teach'),
-      ),
+          child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => loginScreen()));
+        },
+        child: Text('Coba'),
+      )),
     );
   }
 }
