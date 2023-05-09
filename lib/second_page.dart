@@ -25,6 +25,35 @@ class _SecondPage extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Nama Pengguna',
+              style: TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Text('Nomor: 1234567890 | Role: Admin',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ))
+          ],
+        ),
+        actions: <Widget>[
+          CircleAvatar(
+            radius: 15,
+            backgroundImage: AssetImage('assets/images/foto_profil.png'),
+          ),
+          SizedBox(width: 10),
+        ],
+      ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color.fromARGB(255, 216, 243, 220),

@@ -86,10 +86,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget _entryField(
     String title,
     TextEditingController controller,
+    IconData iconData,
   ) {
     return TextField(
       controller: controller,
-      decoration: InputDecoration(labelText: title,icon: Icon(Icons.email)),
+      decoration: InputDecoration(labelText: title, icon: Icon(iconData)),
     );
   }
 
@@ -156,8 +157,8 @@ class _LoginPageState extends State<LoginPage> {
                   fontSize: 30,
                   fontWeight: FontWeight.bold),
             ),
-            _entryField('Email', _emailController),
-            _entryField('Password', _passwordController),
+            _entryField('Email', _emailController, Icons.email),
+            _entryField('Password', _passwordController, Icons.lock),
             _errorMessage(),
             _submitButton(context),
             // _loginOrRegisterButton(),
