@@ -1,4 +1,3 @@
-import 'package:cobalagi2/login_2.dart';
 import 'package:flutter/material.dart';
 import 'widgetTree.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,7 +24,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/second': (context) => SecondPage(),
         '/login': (context) => LoginPage(),
-        'login2': (context) => loginScreen(),
+        // 'login2': (context) => loginScreen(),
       },
     );
   }

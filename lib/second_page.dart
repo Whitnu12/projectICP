@@ -1,7 +1,5 @@
-import 'package:cobalagi2/login_2.dart';
+
 import 'package:flutter/material.dart';
-import 'auth.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SecondPage extends StatefulWidget {
   @override
@@ -79,44 +77,11 @@ class _SecondPage extends State<SecondPage> {
 }
 
 class FirstPage extends StatelessWidget {
-  FirstPage({Key? key}) : super(key: key);
-
-  final User? user = Auth().currentUser;
-
-  Future<void> signOut() async {
-    await Auth().signOut();
-  }
-
-  Widget title() {
-    return const Text('Firebase Auth');
-  }
-
-  Widget _userUid() {
-    return Text(user?.email ?? 'User ID');
-  }
-
-  Widget _signOutButton() {
-    return ElevatedButton(
-      onPressed: signOut,
-      child: const Text('Sign Out'),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _userUid(),
-            _signOutButton(),
-          ],
-        ),
+    return Container(
+      child: Center(
+        child: Text('Home'),
       ),
     );
   }
@@ -140,8 +105,8 @@ class ThirdPage extends StatelessWidget {
       child: Center(
           child: ElevatedButton(
         onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => loginScreen()));
+          // Navigator.push(
+          // context, MaterialPageRoute(builder: (context) => ()));
         },
         child: Text('Coba'),
       )),

@@ -1,74 +1,63 @@
+import 'dart:convert';
+import 'package:cobalagi2/second_page.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../auth.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String? errorMessage = '';
-  bool isLogin = true;
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  Future<void> signInWithEmailAndPassword(BuildContext context) async {
-    try {
-      await Auth().signinWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Invalid email or password.'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        setState(() {
-          errorMessage = e.message;
-        });
+  void _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final response = await http.post(
+      Uri.parse('http://192.168.100.6/laravel-icp2/public/api/auth/login'),
+      body: {
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      },
+    );
+    setState(() {
+      _isLoading = false;
+    });
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final token = data['token'];
+      if (token != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
       }
-    }
-  }
 
-  Future<void> createUserWithEmailAndPassword() async {
-    try {
-      await Auth().createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+      // Navigate to the next page
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SecondPage()),
       );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+    } else {
+      // ignore: use_build_context_synchronously
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Error'),
-            content: Text(errorMessage ?? ''),
+            title: Text('Login Failed'),
+            content: Text('Invalid email or password.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pop();
                 },
                 child: const Text('OK'),
               ),
@@ -79,89 +68,72 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Widget title() {
-    return const Text('Login Page');
-  }
-
-  Widget _entryField(
-    String title,
-    TextEditingController controller,
-    IconData iconData,
-  ) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(labelText: title, icon: Icon(iconData)),
+  Widget _buildEmailField() {
+    return TextFormField(
+      controller: _emailController,
+      decoration: InputDecoration(
+        labelText: 'Email',
+        prefixIcon: Icon(Icons.email),
+      ),
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please enter your email.';
+        }
+        return null;
+      },
     );
   }
 
-  Widget _errorMessage() {
-    return Text(errorMessage ?? ' ');
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: _passwordController,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: Icon(Icons.lock),
+      ),
+      obscureText: true,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please enter your password.';
+        }
+        return null;
+      },
+    );
   }
 
-  Widget _submitButton(BuildContext context) {
+  Widget _buildSubmitButton() {
     return SizedBox(
-        width: 200,
-        height: 45,
-        child: TextButton(
-          style: TextButton.styleFrom(
-              backgroundColor: Color.fromARGB(255, 45, 106, 79)),
-          onPressed: isLogin
-              ? () => signInWithEmailAndPassword(context)
-              : createUserWithEmailAndPassword,
-          child: Text(
-            'Login',
-            // isLogin ? 'Login' : 'Register',
-            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-          ),
-        ));
+      width: double.infinity,
+      height: 45,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _login,
+        child: _isLoading
+            ? CircularProgressIndicator()
+            : Text(
+                'Login',
+                style: TextStyle(color: Colors.white),
+              ),
+      ),
+    );
   }
-
-  // Widget _loginOrRegisterButton() {
-  //   return SizedBox(
-  //       width: 200,
-  //       height: 45,
-  //       child: TextButton(
-  //         onPressed: () {
-  //           setState(() {
-  //             isLogin = !isLogin;
-  //           });
-  //         },
-  //         child: Text(isLogin ? 'Register' : 'Login'),
-  //       ));
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-              Color.fromARGB(255, 255, 255, 255),
-              Color.fromARGB(255, 170, 255, 139)
-            ])),
-        padding: const EdgeInsets.all(20),
+      appBar: AppBar(
+        title: Text('Login Page'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Login',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'OpenSans',
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold),
-            ),
-            _entryField('Email', _emailController, Icons.email),
-            _entryField('Password', _passwordController, Icons.lock),
-            _errorMessage(),
-            _submitButton(context),
-            // _loginOrRegisterButton(),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildEmailField(),
+            SizedBox(height: 16),
+            _buildPasswordField(),
+            SizedBox(height: 16),
+            _buildSubmitButton(),
           ],
         ),
       ),
