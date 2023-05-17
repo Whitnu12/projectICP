@@ -21,44 +21,46 @@ class _SecondPageState extends State<SecondPage> {
     TeachPage(),
   ];
 
-  Guru? guruProfile;
+  Guru? userProfile;
 
   @override
   void initState() {
     super.initState();
-    fetchUserProfileFromApi();
-  }
-
-  Future<void> fetchUserProfileFromApi() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token != null) {
-      try {
-        final profile = await fetchUserProfile(token);
+    _loadUserData();
+    _fetchUserProfile().then((profile) {
+      if (profile != null) {
         setState(() {
-          guruProfile = profile;
+          userProfile = profile;
         });
-      } catch (e) {
-        print('Failed to fetch user profile: $e');
       }
-    }
+    });
   }
 
-  Future<Guru> fetchUserProfile(String token) async {
-    final response = await http.get(
-      Uri.parse(
-          'http://192.168.100.6/laravel-icp2/public/api/auth/profile'), // Ganti dengan URL profil pengguna di API Laravel Anda
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
+  void _loadUserData() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? userDataJson = localStorage.getString('user');
+    String? guruDataJson = localStorage.getString('guru');
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return Guru.fromJson(data);
-    } else {
-      throw Exception('Failed to fetch user profile');
+    if (userDataJson != null && guruDataJson != null) {
+      var userData = jsonDecode(userDataJson);
+      var guruData = jsonDecode(guruDataJson);
+
+      print('User Data: $userData');
+      print('Guru Data: $guruData');
+
+      setState(() {
+        userProfile = Guru(
+          userId: userData['data']['user']['id'],
+          nama: userData['data']['user']['name'],
+          npp: guruData['NPP'],
+          email: userData['data']['user']['email'],
+          password: guruData['password'],
+          jabatan: guruData['jabatan'],
+          fotoProfil: guruData['foto_profil'],
+          createdAt: DateTime.parse(userData['data']['user']['created_at']),
+          updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
+        );
+      });
     }
   }
 
@@ -66,6 +68,34 @@ class _SecondPageState extends State<SecondPage> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  Future<Guru?> _fetchUserProfile() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? token = localStorage.getString('token');
+    if (token != null) {
+      try {
+        final response = await http.get(
+          Uri.parse(
+              'http://192.168.100.6/laravel-icp2/public/api/auth/profile'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data != null &&
+              data['message'] == 'success' &&
+              data['data'] != null) {
+            return Guru.fromJson(data['data']['guru']);
+          }
+        }
+      } catch (e) {
+        print('Error fetching user profile: $e');
+      }
+    }
+    return null;
   }
 
   @override
@@ -79,14 +109,12 @@ class _SecondPageState extends State<SecondPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              guruProfile?.nama ?? 'Nama Pengguna',
+              userProfile?.nama ?? 'Nama Pengguna',
               style: TextStyle(color: Colors.black),
             ),
-            SizedBox(
-              height: 5,
-            ),
+            SizedBox(height: 5),
             Text(
-              'Nomor: ${guruProfile?.npp ?? ''} | Role: ${guruProfile?.jabatan ?? ''}',
+              'Nomor: ${userProfile?.npp ?? ''} | Role: ${userProfile?.jabatan ?? ''}',
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 12,
@@ -110,8 +138,10 @@ class _SecondPageState extends State<SecondPage> {
           ),
           CircleAvatar(
             radius: 15,
-            backgroundImage: NetworkImage(guruProfile?.fotoProfil ??
-                'assets/images/default_profile_picture.png'),
+            backgroundImage: NetworkImage(
+              userProfile?.fotoProfil ??
+                  'assets/images/default_profile_picture.png',
+            ),
           ),
           SizedBox(width: 10),
         ],

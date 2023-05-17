@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/guruProfile.dart';
+
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -155,6 +157,9 @@ class _LoginState extends State<Login> {
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
 
+        // Simpan profil pengguna ke SharedPreferences
+        _loadUserData();
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SecondPage()),
@@ -167,5 +172,34 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Guru? userProfile;
+  void _loadUserData() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? userDataJson = localStorage.getString('user');
+    String? guruDataJson = localStorage.getString('guru');
+
+    if (userDataJson != null && guruDataJson != null) {
+      var userData = jsonDecode(userDataJson);
+      var guruData = jsonDecode(guruDataJson);
+
+      print('User Data: $userData');
+      print('Guru Data: $guruData');
+
+      setState(() {
+        userProfile = Guru(
+          userId: userData['data']['user']['id'],
+          nama: userData['data']['user']['name'],
+          npp: guruData['NPP'],
+          email: userData['data']['user']['email'],
+          password: guruData['password'],
+          jabatan: guruData['jabatan'],
+          fotoProfil: guruData['foto_profil'],
+          createdAt: DateTime.parse(userData['data']['user']['created_at']),
+          updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
+        );
+      });
+    }
   }
 }

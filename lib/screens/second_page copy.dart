@@ -24,39 +24,31 @@ class _SecondPage extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
-    fetchUserProfileFromApi();
+    _loadUserData();
   }
 
-  Future<void> fetchUserProfileFromApi() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+  void _loadUserData() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? userDataJson = localStorage.getString('user');
+    String? guruDataJson = localStorage.getString('guru');
 
-    if (token != null) {
-      try {
-        final profile = await fetchUserProfile(token);
-        setState(() {
-          userProfile = profile;
-        });
-      } catch (e) {
-        print('Failed to fetch user profile: $e');
-      }
-    }
-  }
+    if (userDataJson != null && guruDataJson != null) {
+      var userData = jsonDecode(userDataJson);
+      var guruData = jsonDecode(guruDataJson);
 
-  Future<Guru> fetchUserProfile(String token) async {
-    final response = await http.get(
-      Uri.parse(
-          'http://192.168.100.6/laravel-icp2/public/api/auth/profile'), // Ganti dengan URL profil pengguna di API Laravel Anda
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return Guru.fromJson(data);
-    } else {
-      throw Exception('Failed to fetch user profile');
+      setState(() {
+        userProfile = Guru(
+          userId: userData['id'],
+          nama: userData['name'],
+          npp: guruData['NPP'],
+          email: userData['email'],
+          password: guruData['password'],
+          jabatan: guruData['jabatan'],
+          fotoProfil: guruData['foto_profil'],
+          createdAt: DateTime.parse(userData['created_at']),
+          updatedAt: DateTime.parse(userData['updated_at']),
+        );
+      });
     }
   }
 
@@ -64,6 +56,23 @@ class _SecondPage extends State<SecondPage> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  Future<Guru?> fetchUserProfile(String token) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.100.6/laravel-icp2/public/api/auth/profile'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data != null && data['guru'] != null) {
+        return Guru.fromJson(data['guru']);
+      }
+    }
+    throw Exception('Failed to fetch user profile');
   }
 
   @override
