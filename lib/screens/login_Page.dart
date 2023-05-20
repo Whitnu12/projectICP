@@ -12,6 +12,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  bool isObscurePassword = true;
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   TextEditingController _emailController = TextEditingController();
@@ -28,103 +29,227 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Color(0xff151515),
+      backgroundColor: Colors.green[100],
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 28, vertical: 72),
           child: Column(
             children: [
-              Card(
-                elevation: 4.0,
-                color: Colors.white10,
-                margin: EdgeInsets.only(top: 86),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Login",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 18),
-                        TextFormField(
-                          controller: _emailController,
-                          cursorColor: Colors.blue,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                              hintText: "Email",
-                              hintStyle: TextStyle(color: Colors.white)),
-                          validator: (emailValue) {
-                            if (emailValue!.isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 12),
-                        TextFormField(
-                          controller: _passwordController,
-                          cursorColor: Colors.blue,
-                          keyboardType: TextInputType.text,
-                          obscureText: true,
-                          style: TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                              hintText: "Password",
-                              hintStyle: TextStyle(color: Colors.white)),
-                          validator: (passwordValue) {
-                            if (passwordValue!.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 12),
-                        ElevatedButton(
-                          // ignore: sort_child_properties_last
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 10),
-                            child: Text(
-                              _isLoading ? 'Processing..' : 'Login',
-                              textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18.0,
-                                decoration: TextDecoration.none,
-                                fontWeight: FontWeight.normal,
-                              ),
+              SizedBox(
+                height: 150,
+              ),
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset('assets/images/image_2.png'),
+                    RichText(
+                      text: TextSpan(
+                        children: const <TextSpan>[
+                          TextSpan(
+                            text: ' E-Manage ',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 42, 133, 45),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.blueAccent,
-                            onSurface: Colors.grey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.0),
+                          TextSpan(
+                            text: ' \n SMKN 1 Kota Bima',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _login();
-                            }
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
+
+              Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 18),
+                    TextFormField(
+                      controller: _emailController,
+                      cursorColor: Colors.blue,
+                      keyboardType: TextInputType.text,
+                      style: TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                          hintText: "Email",
+                          hintStyle: TextStyle(color: Colors.black)),
+                      validator: (emailValue) {
+                        if (emailValue!.isEmpty) {
+                          const snackbar = SnackBar(
+                            content: Text("isi email mu!"),
+                            backgroundColor: Colors.red,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passwordController,
+                      cursorColor: Colors.blue,
+                      obscureText: isObscurePassword,
+                      keyboardType: TextInputType.text,
+                      style: TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                          suffixIcon: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  isObscurePassword = !isObscurePassword;
+                                });
+                              },
+                              child: Icon(isObscurePassword
+                                  ? Icons.lock
+                                  : Icons.lock_open_rounded)),
+                          suffixIconColor: Colors.green,
+                          hintText: "Password",
+                          hintStyle: TextStyle(color: Colors.black)),
+                      validator: (passwordValue) {
+                        if (passwordValue!.isEmpty) {
+                          const snackbar = SnackBar(
+                            content: Text("isi password mu!"),
+                            backgroundColor: Colors.red,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    ElevatedButton(
+                      // ignore: sort_child_properties_last
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 75, vertical: 10),
+                        child: Text(
+                          _isLoading ? 'Processing..' : 'Login',
+                          textDirection: TextDirection.ltr,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18.0,
+                            decoration: TextDecoration.none,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[500],
+                        foregroundColor: Colors.grey[700],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _login();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              )
+              //   Card(
+              //     elevation: 4.0,
+              //     color: Colors.white10,
+              //     margin: EdgeInsets.only(top: 86),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(14),
+              //     ),
+              //     child: Padding(
+              //       padding: EdgeInsets.all(24),
+              //       child: Form(
+              //         key: _formKey,
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.center,
+              //           children: [
+              //             Text(
+              //               "Login",
+              //               textAlign: TextAlign.center,
+              //               style: TextStyle(
+              //                 color: Colors.white,
+              //                 fontSize: 24,
+              //                 fontWeight: FontWeight.bold,
+              //               ),
+              //             ),
+              //             SizedBox(height: 18),
+              //             TextFormField(
+              //               controller: _emailController,
+              //               cursorColor: Colors.blue,
+              //               keyboardType: TextInputType.text,
+              //               style: TextStyle(color: Colors.white),
+              //               decoration: InputDecoration(
+              //                   hintText: "Email",
+              //                   hintStyle: TextStyle(color: Colors.white)),
+              //               validator: (emailValue) {
+              //                 if (emailValue!.isEmpty) {
+              //                   return 'Please enter your email';
+              //                 }
+              //                 return null;
+              //               },
+              //             ),
+              //             SizedBox(height: 12),
+              //             TextFormField(
+              //               controller: _passwordController,
+              //               cursorColor: Colors.blue,
+              //               keyboardType: TextInputType.text,
+              //               obscureText: true,
+              //               style: TextStyle(color: Colors.white),
+              //               decoration: InputDecoration(
+              //                   hintText: "Password",
+              //                   hintStyle: TextStyle(color: Colors.white)),
+              //               validator: (passwordValue) {
+              //                 if (passwordValue!.isEmpty) {
+              //                   return 'Please enter your password';
+              //                 }
+              //                 return null;
+              //               },
+              //             ),
+              //             SizedBox(height: 12),
+              //             ElevatedButton(
+              //               // ignore: sort_child_properties_last
+              //               child: Padding(
+              //                 padding: EdgeInsets.symmetric(
+              //                     horizontal: 18, vertical: 10),
+              //                 child: Text(
+              //                   _isLoading ? 'Processing..' : 'Login',
+              //                   textDirection: TextDirection.ltr,
+              //                   style: TextStyle(
+              //                     color: Colors.white,
+              //                     fontSize: 18.0,
+              //                     decoration: TextDecoration.none,
+              //                     fontWeight: FontWeight.normal,
+              //                   ),
+              //                 ),
+              //               ),
+              //               style: ElevatedButton.styleFrom(
+              //                 primary: Colors.blueAccent,
+              //                 onSurface: Colors.grey,
+              //                 shape: RoundedRectangleBorder(
+              //                   borderRadius: BorderRadius.circular(20.0),
+              //                 ),
+              //               ),
+              //               onPressed: () {
+              //                 if (_formKey.currentState!.validate()) {
+              //                   _login();
+              //                 }
+              //               },
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //   ),
             ],
           ),
         ),
@@ -160,15 +285,21 @@ class _LoginState extends State<Login> {
         // Simpan profil pengguna ke SharedPreferences
         _loadUserData();
 
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SecondPage()),
         );
       } else {
         _showMsg(jsonResponse['message']);
+        final snackBar = SnackBar(
+          content: Text(jsonResponse['message']),
+          backgroundColor: Colors.red,
+        );
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
-
     setState(() {
       _isLoading = false;
     });

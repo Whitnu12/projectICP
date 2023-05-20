@@ -110,7 +110,7 @@ class _SecondPageState extends State<SecondPage> {
           children: <Widget>[
             Text(
               userProfile?.nama ?? 'Nama Pengguna',
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(color: Colors.black, fontSize: 22),
             ),
             SizedBox(height: 5),
             Text(
@@ -137,10 +137,10 @@ class _SecondPageState extends State<SecondPage> {
             ],
           ),
           CircleAvatar(
-            radius: 15,
+            radius: 20,
             backgroundImage: NetworkImage(
               userProfile?.fotoProfil ??
-                  'assets/images/default_profile_picture.png',
+                  'https://berita.99.co/wp-content/uploads/2022/06/memakai-topi.jpg',
             ),
           ),
           SizedBox(width: 10),
@@ -174,6 +174,7 @@ class _SecondPageState extends State<SecondPage> {
     await localStorage.remove('user');
     await localStorage.remove('token');
 
+    // ignore: use_build_context_synchronously
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => Login()),

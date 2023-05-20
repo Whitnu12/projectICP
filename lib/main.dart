@@ -36,6 +36,7 @@ import 'package:cobalagi2/screens/login_Page.dart';
 import 'package:flutter/material.dart';
 import 'screens/second_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -45,9 +46,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Page',
+      title: 'splash screen',
+      home: AnimatedSplashScreen(
+        splash: Image.asset('assets/images/Logo-1.png'),
+        splashIconSize: 530,
+        duration: 3000,
+        splashTransition: SplashTransition.fadeTransition,
+        backgroundColor: Colors.green.shade100,
+        nextScreen: CheckAuth(),
+      ),
       debugShowCheckedModeBanner: false,
-      home: CheckAuth(),
       // darkTheme: ThemeData(
       //     brightness: Brightness.dark, accentColor: Colors.blueAccent),
       // themeMode: ThemeMode.dark,
