@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
     //ListView
     return Container(
       margin: EdgeInsetsDirectional.only(top: 20),
       child: SingleChildScrollView(
           child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("Kelas Hari Ini"),
           SizedBox(
             height: 170,
             child: ListView.builder(
@@ -26,6 +27,7 @@ class HomePage extends StatelessWidget {
                 child: Container(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Expanded(
                           flex: 2,
@@ -34,12 +36,15 @@ class HomePage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(20)),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              
                               children: [
                                 RichText(
                                   text: TextSpan(
                                     children: const <TextSpan>[
                                       TextSpan(
-                                        text: 'Teknik Komputer Jaringan dan kesehatan ',
+                                        text:
+                                            'Teknik Komputer Jaringan dan kesehatan ',
                                         style: TextStyle(
                                           color: Colors.white,
                                           overflow: TextOverflow.clip,
@@ -53,7 +58,7 @@ class HomePage extends StatelessWidget {
                                 RichText(
                                     text: TextSpan(children: const <TextSpan>[
                                   TextSpan(
-                                    text: ' XII TKJ 2',
+                                    text: 'XII TKJ 2',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -70,9 +75,9 @@ class HomePage extends StatelessWidget {
                               child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("7PM", textAlign: TextAlign.left,
+                              Text("7PM",
+                                  textAlign: TextAlign.left,
                                   style: TextStyle(
-                                    
                                       color: Colors.white,
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700)),
@@ -103,11 +108,8 @@ class HomePage extends StatelessWidget {
             ),
           ),
           //end of ListView
-
         ],
       )),
-
-      
     );
   }
 }

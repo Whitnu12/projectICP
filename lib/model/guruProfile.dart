@@ -25,7 +25,7 @@ class Guru {
     return Guru(
       userId: json['user_id'],
       nama: json['nama'],
-      npp: json['NPP'],
+      npp: json['npp'],
       email: json['email'],
       password: json['password'],
       jabatan: json['jabatan'],

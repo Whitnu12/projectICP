@@ -52,11 +52,11 @@ class _SecondPageState extends State<SecondPage> {
         userProfile = Guru(
           userId: userData['data']['user']['id'],
           nama: userData['data']['user']['name'],
-          npp: guruData['NPP'],
+          npp: guruData['guru']['npp'],
           email: userData['data']['user']['email'],
-          password: guruData['password'],
-          jabatan: guruData['jabatan'],
-          fotoProfil: guruData['foto_profil'],
+          password: guruData['guru']['password'],
+          jabatan: guruData['guru']['jabatan'],
+          fotoProfil: guruData['guru']['foto_profil'],
           createdAt: DateTime.parse(userData['data']['user']['created_at']),
           updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
         );
@@ -85,16 +85,22 @@ class _SecondPageState extends State<SecondPage> {
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
+          print(data);
           if (data != null &&
               data['message'] == 'success' &&
-              data['data'] != null) {
+              data['data'] != null &&
+              data['data']['guru'] != null) {
             return Guru.fromJson(data['data']['guru']);
+          } else {
+            print('Error fetching user profile: Guru data is null');
           }
         }
       } catch (e) {
         print('Error fetching user profile: $e');
       }
     }
+
+    // Jika token tidak ditemukan atau terjadi kesalahan, kembalikan null.
     return null;
   }
 
