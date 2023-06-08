@@ -8,6 +8,7 @@ class Guru {
   final String? fotoProfil;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int idGuru;
 
   Guru({
     required this.userId,
@@ -19,19 +20,36 @@ class Guru {
     this.fotoProfil,
     required this.createdAt,
     required this.updatedAt,
+    required this.idGuru,
   });
 
   factory Guru.fromJson(Map<String, dynamic> json) {
     return Guru(
-      userId: json['user_id'],
-      nama: json['nama'],
-      npp: json['npp'],
-      email: json['email'],
-      password: json['password'],
-      jabatan: json['jabatan'],
-      fotoProfil: json['foto_profil'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-    );
+        userId: json['user_id'],
+        nama: json['nama'],
+        npp: json['npp'],
+        email: json['email'],
+        password: json['password'],
+        jabatan: json['jabatan'],
+        fotoProfil: json['foto_profil'],
+        createdAt: DateTime.parse(json['created_at']),
+        updatedAt: DateTime.parse(json['updated_at']),
+        idGuru: json['id_guru']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      // Mapping properti ke dalam bentuk JSON
+      'userId': userId,
+      'nama': nama,
+      'npp': npp,
+      'email': email,
+      'password': password,
+      'jabatan': jabatan,
+      'fotoProfil': fotoProfil,
+      'createdAt': createdAt.toString(),
+      'updatedAt': updatedAt.toString(),
+      'idGuru': idGuru,
+    };
   }
 }

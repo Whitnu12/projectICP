@@ -190,10 +190,12 @@ class _LoginState extends State<Login> {
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
 
-        localStorage.setString(
-            'guru', json.encode(jsonResponse['data']['guru']));
-        // Simpan profil pengguna ke SharedPreferences
-        _loadUserData();
+        // Simpan profil pengguna ke SharedPreferences hanya jika guru data tersedia
+        if (jsonResponse['data']['guru'] != null) {
+          localStorage.setString(
+              'guru', json.encode(jsonResponse['data']['guru']));
+          _loadUserData();
+        }
 
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
@@ -239,6 +241,7 @@ class _LoginState extends State<Login> {
           fotoProfil: guruData['guru']['foto_profil'],
           createdAt: DateTime.parse(userData['data']['user']['created_at']),
           updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
+          idGuru: guruData['guru']['id_guru'],
         );
       });
     }

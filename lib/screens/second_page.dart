@@ -16,7 +16,7 @@ class SecondPage extends StatefulWidget {
 class _SecondPageState extends State<SecondPage> {
   int _currentIndex = 0;
   final List<Widget> _children = [
-    HomePage(),
+    HomeScreen(),
     ReportPage(),
     TeachPage(),
   ];
@@ -31,9 +31,28 @@ class _SecondPageState extends State<SecondPage> {
       if (profile != null) {
         setState(() {
           userProfile = profile;
+          _saveUserProfileToSharedPreferences(userProfile!);
+          _updateUserData(userProfile!);
         });
       }
     });
+  }
+
+  void _updateUserData(Guru userProfile) async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? userDataJson = localStorage.getString('user');
+
+    if (userDataJson != null) {
+      var userData = jsonDecode(userDataJson);
+
+      setState(() {
+        userData['data']['user']['name'] = userProfile.nama;
+        userData['data']['user']['email'] = userProfile.email;
+        userData['data']['user']['updated_at'] =
+            userProfile.updatedAt.toString();
+        localStorage.setString('user', json.encode(userData));
+      });
+    }
   }
 
   void _loadUserData() async {
@@ -50,15 +69,16 @@ class _SecondPageState extends State<SecondPage> {
 
       setState(() {
         userProfile = Guru(
-          userId: userData['data']['user']['id'],
-          nama: userData['data']['user']['name'],
-          npp: guruData['guru']['npp'],
-          email: userData['data']['user']['email'],
-          password: guruData['guru']['password'],
-          jabatan: guruData['guru']['jabatan'],
-          fotoProfil: guruData['guru']['foto_profil'],
-          createdAt: DateTime.parse(userData['data']['user']['created_at']),
-          updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
+          userId: guruData['user_id'],
+          idGuru: guruData['id_guru'],
+          nama: guruData['nama'],
+          npp: guruData['npp'],
+          email: guruData['email'],
+          password: guruData['password'],
+          jabatan: guruData['jabatan'],
+          fotoProfil: guruData['foto_profil'],
+          createdAt: DateTime.parse(guruData['created_at']),
+          updatedAt: DateTime.parse(guruData['updated_at']),
         );
       });
     }
@@ -73,24 +93,26 @@ class _SecondPageState extends State<SecondPage> {
   Future<Guru?> _fetchUserProfile() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     String? token = localStorage.getString('token');
+
     if (token != null) {
       try {
         final response = await http.get(
           Uri.parse(
-              'http://192.168.100.6/laravel-icp2/public/api/auth/profile'),
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
+              'http://192.168.12.147/laravel-icp2/public/api/auth/profile'),
+          headers: {'Authorization': 'Bearer $token'},
         );
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           print(data);
+
           if (data != null &&
               data['message'] == 'success' &&
               data['data'] != null &&
               data['data']['guru'] != null) {
-            return Guru.fromJson(data['data']['guru']);
+            Guru guru = Guru.fromJson(data['data']['guru']);
+            localStorage.setString('guru', json.encode(guru.toJson()));
+            return guru;
           } else {
             print('Error fetching user profile: Guru data is null');
           }
@@ -107,55 +129,68 @@ class _SecondPageState extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              userProfile?.nama ?? 'Nama Pengguna',
-              style: TextStyle(color: Colors.black, fontSize: 22),
-            ),
-            SizedBox(height: 5),
-            Text(
-              'Nomor: ${userProfile?.npp ?? ''} | Role: ${userProfile?.jabatan ?? ''}',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(65),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(
+                height: 10,
               ),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'logout') {
-                logout();
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'logout',
-                child: Text('Log Out'),
+              Text(
+                userProfile?.nama ?? 'Nama Pengguna',
+                style: TextStyle(color: Colors.black, fontSize: 22),
+              ),
+              SizedBox(height: 5),
+              Text(
+                'Nomor: ${userProfile?.npp ?? ''} | Role: ${userProfile?.jabatan ?? ''}',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: NetworkImage(
-              userProfile?.fotoProfil ??
-                  'https://berita.99.co/wp-content/uploads/2022/06/memakai-topi.jpg',
+          actions: <Widget>[
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  logout();
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Text('Log Out'),
+                ),
+              ],
             ),
-          ),
-          SizedBox(width: 10),
-        ],
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(
+                userProfile?.fotoProfil ??
+                    'https://berita.99.co/wp-content/uploads/2022/06/memakai-topi.jpg',
+              ),
+            ),
+            SizedBox(
+              width: 20,
+              child: const DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color.fromARGB(255, 216, 243, 220),
         onTap: onTabTapped,
+        unselectedItemColor: Colors.green[500],
+        fixedColor: Colors.green[900],
         currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
@@ -186,5 +221,11 @@ class _SecondPageState extends State<SecondPage> {
       MaterialPageRoute(builder: (context) => Login()),
       (route) => false,
     );
+  }
+
+  Future<void> _saveUserProfileToSharedPreferences(Guru userProfile) async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String userProfileJson = jsonEncode(userProfile.toJson());
+    await localStorage.setString('guru', userProfileJson);
   }
 }
