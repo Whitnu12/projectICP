@@ -1,3 +1,4 @@
+import 'package:cobalagi2/screens/detail_mapel.dart';
 import 'package:flutter/material.dart';
 
 class Class {
@@ -15,9 +16,9 @@ class Class {
 class TeachPage extends StatelessWidget {
   final List<Class> classes = [
     Class(
-        kelas: 'XII A',
-        mataPelajaran: 'Matematika Dasar',
-        waktu: '08.40 - 10.40'),
+        kelas: 'XII C',
+        mataPelajaran: 'Matematika Diskrit',
+        waktu: '10.50 - 13.20'),
     Class(
         kelas: 'XII B',
         mataPelajaran: 'Bahasa Indonesia',
@@ -35,33 +36,47 @@ class TeachPage extends StatelessWidget {
     return Scaffold(
       body: ListView.separated(
         itemBuilder: (BuildContext context, int index) {
-          return Card(
-            child: ListTile(
-              title: Text(
-                classes[index].kelas,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DetailMengajar(
+                          kelas: classes[index].kelas,
+                          mataPelajaran: classes[index].mataPelajaran,
+                          jamPelajaran: 2,
+                          jamMulai: TimeOfDay(hour: 10, minute: 50),
+                        )),
+              );
+            },
+            child: Card(
+              child: ListTile(
+                title: Text(
+                  classes[index].kelas,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              subtitle: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(classes[index].mataPelajaran),
-                      SizedBox(height: 4),
-                    ],
-                  ),
-                  Text(
-                    classes[index].waktu,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                subtitle: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(classes[index].mataPelajaran),
+                        SizedBox(height: 4),
+                      ],
                     ),
-                  ),
-                ],
+                    Text(
+                      classes[index].waktu,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

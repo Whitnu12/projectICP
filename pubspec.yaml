@@ -40,6 +40,9 @@ dependencies:
   http: ^0.13.4
   page_transition: '^2.0.9'
   animated_splash_screen: ^1.1.0
+  image_picker: ^0.8.7+5
+  gradient_progress_indicator: ^1.0.0+1
+  percent_indicator: ^4.2.3
 
 dev_dependencies:
   flutter_test:

@@ -1,15 +1,13 @@
-import 'dart:convert';
+// import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:cobalagi2/network/api.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:cobalagi2/network/api.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/guruProfile.dart';
-import '../model/jadwalMengajar.dart';
-
-int totalJamDiajar = 50;
-int targetJam = 110;
+// import '../model/guruProfile.dart';
+// import '../model/jadwalMengajar.dart';
+import 'detail_mapel.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -31,15 +29,24 @@ class Subject {
 class Class {
   final String mataPelajaran;
   final String kelas;
-  final String waktu;
+  final TimeOfDay jamMulai;
+  final int jamPelajaran;
   final String status;
 
   Class({
     required this.mataPelajaran,
     required this.kelas,
-    required this.waktu,
+    required this.jamMulai,
+    required this.jamPelajaran,
     required this.status,
   });
+
+  TimeOfDay get jamSelesai {
+    int totalMenit = jamMulai.hour * 60 + jamMulai.minute + 45;
+    int jam = totalMenit ~/ 60;
+    int menit = totalMenit % 60;
+    return TimeOfDay(hour: jam, minute: menit);
+  }
 }
 
 final List<Subject> subjects = [
@@ -52,40 +59,34 @@ List<Class> classList = [
   Class(
     mataPelajaran: 'Matematika Diskrit',
     kelas: 'XII C',
-    waktu: '08.40 - 10.40',
+    jamMulai: TimeOfDay(hour: 10, minute: 50),
+    jamPelajaran: 2,
     status: 'akan datang',
   ),
   Class(
     mataPelajaran: 'Jaringan Keamanan Komputer',
     kelas: 'XII B',
-    waktu: '10.50 - 12.50',
+    jamMulai: TimeOfDay(hour: 12, minute: 30),
+    jamPelajaran: 3,
     status: 'mengajar',
   ),
   Class(
-    mataPelajaran: 'Pancasila',
-    kelas: 'XII A',
-    waktu: '13.00 - 15.00',
-    status: 'mengajar',
-  ),
-  Class(
-    mataPelajaran: 'Cloud Computing',
-    kelas: 'XII A',
-    waktu: '15.10 - 17.10',
+    mataPelajaran: 'Jaringan Keamanan Komputer',
+    kelas: 'XII D',
+    jamMulai: TimeOfDay(hour: 7, minute: 30),
+    jamPelajaran: 4,
     status: 'ditinggalkan',
   ),
   Class(
-    mataPelajaran: 'Jaringan Komputer Praktik',
+    mataPelajaran: 'Jaringan Keamanan Komputer',
     kelas: 'XII B',
-    waktu: '17.20 - 19.20',
+    jamPelajaran: 3,
+    jamMulai: TimeOfDay(hour: 14, minute: 30),
     status: 'mengajar',
   ),
 ];
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<JadwalMengajar> jadwalList = []; // Daftar jadwal mengajar
-  Network network = Network();
-  int idGuru = 0;
-
   @override
   void initState() {
     super.initState();
@@ -116,74 +117,87 @@ class _HomeScreenState extends State<HomeScreen> {
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (BuildContext context, int index) {
                   Class currentClass = classList[index];
-                  bool isMengajar = currentClass.status == 'mengajar';
                   bool isDitinggalkan = currentClass.status == 'ditinggalkan';
-                  bool isAkanDatang = currentClass.status == 'akan datang';
 
-                  return Container(
-                    width: 340,
-                    child: Card(
-                      color:
-                          isDitinggalkan ? Colors.red[100] : Colors.green[100],
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailMengajar(
+                              kelas: currentClass.kelas,
+                              mataPelajaran: currentClass.mataPelajaran,
+                              jamMulai: currentClass.jamMulai,
+                              jamPelajaran: currentClass.jamPelajaran),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 340,
+                      child: Card(
+                        color: isDitinggalkan
+                            ? Colors.red[100]
+                            : Colors.green[100],
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 30),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          currentClass.mataPelajaran,
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 30),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        currentClass.kelas,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   SizedBox(height: 30),
                                   Align(
                                     alignment: Alignment.centerLeft,
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        currentClass.mataPelajaran,
-                                        style: TextStyle(fontSize: 20),
-                                      ),
+                                    child: Text(
+                                      '${currentClass.jamMulai.hour.toString().padLeft(2, '0')}:${currentClass.jamMulai.minute.toString().padLeft(2, '0')} - ${currentClass.jamSelesai.hour.toString().padLeft(2, '0')}:${currentClass.jamSelesai.minute.toString().padLeft(2, '0')}',
+                                      style: TextStyle(fontSize: 18),
                                     ),
                                   ),
-                                  SizedBox(width: 30),
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      currentClass.kelas,
+                                      ' ${currentClass.status}',
                                       style: TextStyle(
                                         fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 30),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    currentClass.waktu,
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    currentClass.status,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -205,8 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: subjects
-                  .length, // Ganti dengan jumlah data jadwal pelajaran esok hari
+              itemCount: subjects.length,
               itemBuilder: (BuildContext context, int index) {
                 Subject currentSubject = subjects[index];
                 double progress =

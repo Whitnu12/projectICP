@@ -1,4 +1,5 @@
 import 'package:cobalagi2/screens/second_page.dart';
+import 'package:cobalagi2/screens/tenaga_kependidikan/layout_tenaga.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -131,16 +132,20 @@ class _LoginState extends State<Login> {
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: 75, vertical: 10),
-                        child: Text(
-                          _isLoading ? 'Processing..' : 'Login',
-                          textDirection: TextDirection.ltr,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.0,
-                            decoration: TextDecoration.none,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Text(
+                                'Login',
+                                textDirection: TextDirection.ltr,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.0,
+                                  decoration: TextDecoration.none,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green[500],
@@ -189,6 +194,8 @@ class _LoginState extends State<Login> {
         localStorage.setString('token', jsonResponse['data']['token']);
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
+        localStorage.setString(
+            'jabatan', (jsonResponse['data']['guru']['jabatan']));
 
         // Simpan profil pengguna ke SharedPreferences hanya jika guru data tersedia
         if (jsonResponse['data']['guru'] != null) {
@@ -198,17 +205,26 @@ class _LoginState extends State<Login> {
         }
 
         // ignore: use_build_context_synchronously
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SecondPage()),
-        );
+        String jabatan = jsonResponse['data']['guru']['jabatan'];
+        if (jabatan == 'tenaga_kependidikan') {
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => TenagaSpace()),
+          );
+        } else {
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SecondPage()),
+          );
+        }
       } else {
         _showMsg(jsonResponse['message']);
         final snackBar = SnackBar(
           content: Text(jsonResponse['message']),
           backgroundColor: Colors.red,
         );
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
@@ -226,9 +242,6 @@ class _LoginState extends State<Login> {
     if (userDataJson != null && guruDataJson != null) {
       var userData = jsonDecode(userDataJson);
       var guruData = jsonDecode(guruDataJson);
-
-      print('User Data: $userData');
-      print('Guru Data: $guruData');
 
       setState(() {
         userProfile = Guru(

@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class LaporanPenugasan extends StatefulWidget {
   @override
@@ -9,6 +9,7 @@ class LaporanPenugasan extends StatefulWidget {
 
 class _LaporanPenugasanState extends State<LaporanPenugasan> {
   DateTime? _selectedDate;
+  List<File?> _imageFiles = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -23,6 +24,24 @@ class _LaporanPenugasanState extends State<LaporanPenugasan> {
         _selectedDate = picked;
       });
     }
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        if (_imageFiles.length < 5) {
+          _imageFiles.add(File(image.path));
+        }
+      });
+    }
+  }
+
+  void _deleteImage(int index) {
+    setState(() {
+      _imageFiles.removeAt(index);
+    });
   }
 
   @override
@@ -76,12 +95,12 @@ class _LaporanPenugasanState extends State<LaporanPenugasan> {
                 TextFormField(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    hintText: 'Masukkan nama Tugas',
+                    hintText: 'Masukkan nama tugas',
                   ),
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Tanggal Kegiatan',
+                  'Tanggal Penugasan',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -96,7 +115,7 @@ class _LaporanPenugasanState extends State<LaporanPenugasan> {
                     child: TextFormField(
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Pilih tanggal kegiatan',
+                        hintText: 'Pilih tanggal tugas',
                       ),
                       controller: TextEditingController(
                         text: _selectedDate != null
@@ -131,11 +150,90 @@ class _LaporanPenugasanState extends State<LaporanPenugasan> {
                   ),
                 ),
                 SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    // Logic untuk mengupload foto atau file
-                  },
-                  child: Text('Upload Foto'),
+                Container(
+                  height: 200,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _imageFiles.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == _imageFiles.length) {
+                        return GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            width: 150,
+                            margin: EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        );
+                      } else {
+                        return Stack(
+                          children: [
+                            Container(
+                              width: 150,
+                              margin: EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  _imageFiles[index]!,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () => _deleteImage(index),
+                                child: CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.red,
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(height: 16),
+                Container(
+                  width: double.infinity, // Lebar Container
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      fixedSize: MaterialStateProperty.all(Size.fromHeight(40)),
+                      backgroundColor: MaterialStateProperty.all(Colors.green),
+                    ),
+                    onPressed: () {
+                      // Logic untuk menyimpan data ke database
+                    },
+                    child: SizedBox(
+                      width:
+                          double.infinity, // Sesuaikan dengan lebar Container
+                      child: Text('Kirim',
+                          textAlign: TextAlign.center, // Menengahkan teks
+                          style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
                 ),
               ],
             ),

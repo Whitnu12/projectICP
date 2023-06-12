@@ -1,22 +1,22 @@
+import 'package:cobalagi2/screens/tenaga_kependidikan/home_tenaga.dart';
 import 'package:flutter/material.dart';
-import 'package:cobalagi2/screens/home_page.dart';
 import 'package:cobalagi2/screens/report_page.dart';
 import 'package:cobalagi2/screens/teach_page.dart';
 import 'package:cobalagi2/model/guruProfile.dart';
-import 'login_Page.dart';
+import '../login_Page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SecondPage extends StatefulWidget {
+class TenagaSpace extends StatefulWidget {
   @override
-  _SecondPageState createState() => _SecondPageState();
+  _TenagaSpaceState createState() => _TenagaSpaceState();
 }
 
-class _SecondPageState extends State<SecondPage> {
+class _TenagaSpaceState extends State<TenagaSpace> {
   int _currentIndex = 0;
   final List<Widget> _children = [
-    HomeScreen(),
+    HomeTenaga(),
     ReportPage(),
     TeachPage(),
   ];
@@ -202,8 +202,8 @@ class _SecondPageState extends State<SecondPage> {
             label: 'Laporan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Mengajar',
+            icon: Icon(Icons.schedule),
+            label: 'Kelas',
           ),
         ],
       ),
