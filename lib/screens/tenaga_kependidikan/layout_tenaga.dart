@@ -1,7 +1,7 @@
 import 'package:cobalagi2/screens/tenaga_kependidikan/home_tenaga.dart';
+import 'package:cobalagi2/screens/tenaga_kependidikan/tenaga_IsiKelas.dart';
 import 'package:flutter/material.dart';
 import 'package:cobalagi2/screens/report_page.dart';
-import 'package:cobalagi2/screens/teach_page.dart';
 import 'package:cobalagi2/model/guruProfile.dart';
 import '../login_Page.dart';
 import 'package:http/http.dart' as http;
@@ -18,7 +18,7 @@ class _TenagaSpaceState extends State<TenagaSpace> {
   final List<Widget> _children = [
     HomeTenaga(),
     ReportPage(),
-    TeachPage(),
+    TenagaKelas(),
   ];
 
   Guru? userProfile;

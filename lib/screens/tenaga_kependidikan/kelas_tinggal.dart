@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class KelasTinggal extends StatefulWidget {
   final String kelas;
@@ -20,7 +18,6 @@ class KelasTinggal extends StatefulWidget {
 }
 
 class _KelasTinggalState extends State<KelasTinggal> {
-  Stopwatch _stopwatch = Stopwatch();
   bool _isClassLeft = true;
   String _leaveReason = 'Ada Rapat Pusat di Jakarta';
   String get formattedJamMulai {
@@ -59,7 +56,7 @@ class _KelasTinggalState extends State<KelasTinggal> {
                     color: Colors.black,
                   ),
                   children: [
-                    TextSpan(text: ' Mengajar \n'),
+                    TextSpan(text: ' Isi Kelas \n'),
                     TextSpan(
                       text: ' ${widget.mataPelajaran}',
                       style: TextStyle(
@@ -144,10 +141,10 @@ class _KelasTinggalState extends State<KelasTinggal> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {},
-                        child: Text('Isi Kelas'),
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             padding: EdgeInsets.only(top: 15, bottom: 15)),
+                        child: Text('Isi Kelas'),
                       ),
                     )
                   ],

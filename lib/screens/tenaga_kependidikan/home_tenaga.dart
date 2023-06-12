@@ -203,7 +203,7 @@ class _HomeTenagaState extends State<HomeTenaga> {
                 height: 20,
               ),
               Text(
-                'Capain jam belajar',
+                'Pesan Kelas',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
