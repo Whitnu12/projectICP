@@ -1,6 +1,18 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:convert';
+
+import 'package:cobalagi2/network/api.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../model/guruProfile.dart';
 
 class LaporanKegiatan extends StatefulWidget {
   @override
@@ -8,8 +20,103 @@ class LaporanKegiatan extends StatefulWidget {
 }
 
 class _LaporanKegiatanState extends State<LaporanKegiatan> {
-  DateTime? _selectedDate;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _namaKegiatanController = TextEditingController();
+  final TextEditingController _deskripsiController = TextEditingController();
+  String? _selectedDate;
   List<File?> _imageFiles = [];
+
+// Mendapatkan nilai idGuru dari shared preference
+  Future<int> getIdGuruFromSharedPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int idGuru = prefs.getInt('idGuru') ?? 0;
+    return idGuru;
+  }
+
+  void _submitForm() async {
+    // Validate form fields
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Prepare data for the request
+    String namaKegiatan = _namaKegiatanController.text;
+    String deskripsi = _deskripsiController.text;
+    String jenisLaporan = '3';
+
+    int idGuru = await getIdGuruFromSharedPreference();
+
+    // Create multipart request
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://192.168.100.6/laravel-icp2/public/api/laporan/create'),
+    );
+    // Add text fields to the request
+    request.fields['judul_laporan'] = namaKegiatan;
+    request.fields['deskripsi_laporan'] = deskripsi;
+    request.fields['id_jenis'] = jenisLaporan;
+    request.fields['id_guru'] = idGuru.toString();
+    request.fields['tanggal'] = _selectedDate!;
+
+    // Add image files to the request
+    for (var file in _imageFiles) {
+      if (file != null) {
+        String fileName = path.basename(file.path);
+        request.files.add(await http.MultipartFile.fromPath(
+          'gambar[]',
+          file.path,
+          filename: fileName,
+          contentType: MediaType(
+            'image',
+            'jpeg',
+          ),
+        ));
+      }
+    }
+
+    // Send the request
+    try {
+      final response = await Network().multipartRequest(request);
+      if (response.statusCode == 201) {
+        // Request successful
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Laporan kegiatan berhasil dikirim'),
+              backgroundColor: Colors.green),
+        );
+        // Clear form fields and image files
+        _namaKegiatanController.clear();
+        _deskripsiController.clear();
+        setState(() {
+          _selectedDate = null;
+          _imageFiles.clear();
+        });
+      } else {
+        // Request failed
+        // Show error message with response information
+        String errorMessage = 'Gagal mengirim laporan kegiatan';
+        if (response.body != null) {
+          var errorJson = json.decode(response.body);
+          if (errorJson is Map<String, dynamic>) {
+            errorJson.forEach((key, value) {
+              errorMessage += '\n$key: ${value[0]}';
+            });
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      // Error occurred during the request
+      print('Error: $e');
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan')),
+      );
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -21,19 +128,19 @@ class _LaporanKegiatanState extends State<LaporanKegiatan> {
 
     if (picked != null && picked != _selectedDate) {
       setState(() {
-        _selectedDate = picked;
+        final DateFormat formatter = DateFormat('dd/MM/yyyy');
+        _selectedDate = formatter.format(picked);
       });
     }
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+  void _pickImage() async {
+    final pickedImage =
+        await ImagePicker().getImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
       setState(() {
-        if (_imageFiles.length < 5) {
-          _imageFiles.add(File(image.path));
-        }
+        _imageFiles.add(File(pickedImage.path));
       });
     }
   }
@@ -51,191 +158,208 @@ class _LaporanKegiatanState extends State<LaporanKegiatan> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                        children: [
-                          TextSpan(text: 'Laporan\n'),
-                          TextSpan(
-                            text: 'Kegiatan',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Nama kegiatan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                TextFormField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Masukkan nama kegiatan',
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Tanggal Kegiatan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () {
-                    _selectDate(context);
-                  },
-                  child: AbsorbPointer(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Pilih tanggal kegiatan',
-                      ),
-                      controller: TextEditingController(
-                        text: _selectedDate != null
-                            ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                            : '',
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Apa yang Terjadi',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                TextFormField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Masukkan deskripsi',
-                  ),
-                  maxLines: 5,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Foto Kegiatan',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  height: 200,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _imageFiles.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == _imageFiles.length) {
-                        return GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            width: 150,
-                            margin: EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        );
-                      } else {
-                        return Stack(
                           children: [
-                            Container(
+                            TextSpan(text: 'Laporan\n'),
+                            TextSpan(
+                              text: 'Kegiatan',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Nama kegiatan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    controller: _namaKegiatanController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Masukkan nama kegiatan';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Masukkan nama kegiatan',
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Tanggal Kegiatan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Pilih tanggal kegiatan',
+                        ),
+                        controller: TextEditingController(
+                          text: _selectedDate != null ? '$_selectedDate' : '',
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Apa yang Terjadi',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  TextFormField(
+                    controller: _deskripsiController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Masukkan deskripsi';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Masukkan deskripsi',
+                    ),
+                    maxLines: 5,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Foto Kegiatan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _imageFiles.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == _imageFiles.length) {
+                          return GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
                               width: 150,
                               margin: EdgeInsets.only(right: 8),
                               decoration: BoxDecoration(
                                 border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  _imageFiles[index]!,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
+                              child: Icon(
+                                Icons.add,
+                                size: 48,
+                                color: Colors.grey,
                               ),
                             ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: GestureDetector(
-                                onTap: () => _deleteImage(index),
-                                child: CircleAvatar(
-                                  radius: 12,
-                                  backgroundColor: Colors.red,
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: Colors.white,
+                          );
+                        } else {
+                          return Stack(
+                            children: [
+                              Container(
+                                width: 150,
+                                margin: EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    _imageFiles[index]!,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      }
-                    },
-                  ),
-                ),
-                SizedBox(height: 16),
-                Container(
-                  width: double.infinity, // Lebar Container
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      fixedSize: MaterialStateProperty.all(Size.fromHeight(40)),
-                      backgroundColor: MaterialStateProperty.all(Colors.green),
-                    ),
-                    onPressed: () {
-                      // Logic untuk menyimpan data ke database
-                    },
-                    child: SizedBox(
-                      width:
-                          double.infinity, // Sesuaikan dengan lebar Container
-                      child: Text('Kirim',
-                          textAlign: TextAlign.center, // Menengahkan teks
-                          style: TextStyle(fontSize: 16)),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: GestureDetector(
+                                  onTap: () => _deleteImage(index),
+                                  child: CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.red,
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(height: 16),
+                  Container(
+                    width: double.infinity, // Lebar Container
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        fixedSize:
+                            MaterialStateProperty.all(Size.fromHeight(40)),
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.green),
+                      ),
+                      onPressed: () {
+                        _submitForm();
+                      },
+                      child: SizedBox(
+                        width:
+                            double.infinity, // Sesuaikan dengan lebar Container
+                        child: Text('Kirim',
+                            textAlign: TextAlign.center, // Menengahkan teks
+                            style: TextStyle(fontSize: 16)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

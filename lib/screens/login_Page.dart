@@ -3,9 +3,11 @@ import 'package:cobalagi2/screens/tenaga_kependidikan/layout_tenaga.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cobalagi2/model/guruProfile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/guruProfile.dart';
+import '../network/api.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -181,11 +183,7 @@ class _LoginState extends State<Login> {
     var data = {'email': email, 'password': password};
 
     if (email.isNotEmpty && password.isNotEmpty) {
-      var response = await http.post(
-        Uri.parse('http://192.168.100.6/laravel-icp2/public/api/auth/login'),
-        body: json.encode(data),
-        headers: {'Content-Type': 'application/json'},
-      );
+      var response = await Network().auth(data, '/auth/login');
 
       var jsonResponse = json.decode(response.body);
 
@@ -194,18 +192,10 @@ class _LoginState extends State<Login> {
         localStorage.setString('token', jsonResponse['data']['token']);
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
-        localStorage.setString(
-            'jabatan', (jsonResponse['data']['guru']['jabatan']));
-
-        // Simpan profil pengguna ke SharedPreferences hanya jika guru data tersedia
-        if (jsonResponse['data']['guru'] != null) {
-          localStorage.setString(
-              'guru', json.encode(jsonResponse['data']['guru']));
-          _loadUserData();
-        }
+        localStorage.setString('jabatan', (jsonResponse['data']['jabatan']));
 
         // ignore: use_build_context_synchronously
-        String jabatan = jsonResponse['data']['guru']['jabatan'];
+        String jabatan = jsonResponse['data']['jabatan'];
         if (jabatan == 'tenaga_kependidikan') {
           // ignore: use_build_context_synchronously
           Navigator.pushReplacement(
@@ -231,32 +221,5 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = false;
     });
-  }
-
-  Guru? userProfile;
-  void _loadUserData() async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? userDataJson = localStorage.getString('user');
-    String? guruDataJson = localStorage.getString('guru');
-
-    if (userDataJson != null && guruDataJson != null) {
-      var userData = jsonDecode(userDataJson);
-      var guruData = jsonDecode(guruDataJson);
-
-      setState(() {
-        userProfile = Guru(
-          userId: userData['data']['user']['id'],
-          nama: userData['data']['user']['name'],
-          npp: guruData['guru']['npp'],
-          email: userData['data']['user']['email'],
-          password: guruData['guru']['password'],
-          jabatan: guruData['guru']['jabatan'],
-          fotoProfil: guruData['guru']['foto_profil'],
-          createdAt: DateTime.parse(userData['data']['user']['created_at']),
-          updatedAt: DateTime.parse(userData['data']['user']['updated_at']),
-          idGuru: guruData['guru']['id_guru'],
-        );
-      });
-    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:cobalagi2/screens/tenaga_kependidikan/tenaga_IsiKelas.dart';
 import 'package:flutter/material.dart';
 import 'package:cobalagi2/screens/report_page.dart';
 import 'package:cobalagi2/model/guruProfile.dart';
+import '../../network/api.dart';
 import '../login_Page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -27,60 +28,71 @@ class _TenagaSpaceState extends State<TenagaSpace> {
   void initState() {
     super.initState();
     _loadUserData();
-    _fetchUserProfile().then((profile) {
-      if (profile != null) {
-        setState(() {
-          userProfile = profile;
-          _saveUserProfileToSharedPreferences(userProfile!);
-          _updateUserData(userProfile!);
-        });
-      }
-    });
   }
 
-  void _updateUserData(Guru userProfile) async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? userDataJson = localStorage.getString('user');
+  Network network = Network();
 
-    if (userDataJson != null) {
-      var userData = jsonDecode(userDataJson);
+  void _loadUserData() async {
+    try {
+      Guru guruProfile = await fetchGuruProfile();
 
-      setState(() {
-        userData['data']['user']['name'] = userProfile.nama;
-        userData['data']['user']['email'] = userProfile.email;
-        userData['data']['user']['updated_at'] =
-            userProfile.updatedAt.toString();
-        localStorage.setString('user', json.encode(userData));
-      });
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      String? userDataJson = localStorage.getString('user');
+      localStorage.setInt('idGuru', guruProfile.idGuru);
+
+      if (userDataJson != null) {
+        var userData = jsonDecode(userDataJson);
+
+        setState(() {
+          userProfile = Guru(
+            userId: guruProfile.userId,
+            idGuru: guruProfile.idGuru,
+            nama: guruProfile.nama,
+            npp: guruProfile.npp,
+            email: guruProfile.email,
+            password: guruProfile.password,
+            jabatan: guruProfile.jabatan,
+          );
+        });
+      }
+    } catch (e) {
+      print('Failed to load user data: $e');
     }
   }
 
-  void _loadUserData() async {
+  Future<Guru> fetchGuruProfile() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? userDataJson = localStorage.getString('user');
-    String? guruDataJson = localStorage.getString('guru');
+    String? token = localStorage.getString('token');
 
-    if (userDataJson != null && guruDataJson != null) {
-      var userData = jsonDecode(userDataJson);
-      var guruData = jsonDecode(guruDataJson);
+    if (token == null) {
+      throw Exception('Token not found');
+    }
 
-      print('User Data: $userData');
-      print('Guru Data: $guruData');
+    var headers = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
 
-      setState(() {
-        userProfile = Guru(
-          userId: guruData['user_id'],
-          idGuru: guruData['id_guru'],
-          nama: guruData['nama'],
-          npp: guruData['npp'],
-          email: guruData['email'],
-          password: guruData['password'],
-          jabatan: guruData['jabatan'],
-          fotoProfil: guruData['foto_profil'],
-          createdAt: DateTime.parse(guruData['created_at']),
-          updatedAt: DateTime.parse(guruData['updated_at']),
-        );
-      });
+    var response = await network.getData('/auth/profile');
+
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      var guruData = jsonResponse['data']['guru'];
+
+      return Guru(
+        userId: guruData['user_id'] as int,
+        idGuru: guruData['id_guru'] as int,
+        nama: guruData['nama'],
+        npp: guruData['npp'],
+        email: guruData['email'],
+        password: guruData['password'],
+        jabatan: guruData['jabatan'],
+        createdAt: DateTime.parse(guruData['created_at']),
+        updatedAt: DateTime.parse(guruData['updated_at']),
+      );
+    } else {
+      throw Exception('Failed to load guru profile');
     }
   }
 
@@ -90,41 +102,7 @@ class _TenagaSpaceState extends State<TenagaSpace> {
     });
   }
 
-  Future<Guru?> _fetchUserProfile() async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? token = localStorage.getString('token');
-
-    if (token != null) {
-      try {
-        final response = await http.get(
-          Uri.parse(
-              'http://192.168.100.6/laravel-icp2/public/api/auth/profile'),
-          headers: {'Authorization': 'Bearer $token'},
-        );
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          print(data);
-
-          if (data != null &&
-              data['message'] == 'success' &&
-              data['data'] != null &&
-              data['data']['guru'] != null) {
-            Guru guru = Guru.fromJson(data['data']['guru']);
-            localStorage.setString('guru', json.encode(guru.toJson()));
-            return guru;
-          } else {
-            print('Error fetching user profile: Guru data is null');
-          }
-        }
-      } catch (e) {
-        print('Error fetching user profile: $e');
-      }
-    }
-
-    // Jika token tidak ditemukan atau terjadi kesalahan, kembalikan null.
-    return null;
-  }
+  // Jika token tidak ditemukan atau terjadi kesalahan, kembalikan null.
 
   @override
   Widget build(BuildContext context) {
@@ -212,8 +190,7 @@ class _TenagaSpaceState extends State<TenagaSpace> {
 
   void logout() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    await localStorage.remove('user');
-    await localStorage.remove('token');
+    localStorage.clear(); // Menghapus semua nilai yang ada di SharedPreferences
 
     // ignore: use_build_context_synchronously
     Navigator.pushAndRemoveUntil(
@@ -221,11 +198,5 @@ class _TenagaSpaceState extends State<TenagaSpace> {
       MaterialPageRoute(builder: (context) => Login()),
       (route) => false,
     );
-  }
-
-  Future<void> _saveUserProfileToSharedPreferences(Guru userProfile) async {
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String userProfileJson = jsonEncode(userProfile.toJson());
-    await localStorage.setString('guru', userProfileJson);
   }
 }

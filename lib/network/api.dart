@@ -31,4 +31,9 @@ class Network {
       'Authorization': 'Bearer $token',
     };
   }
+
+  Future<http.Response> multipartRequest(http.MultipartRequest request) async {
+    var response = await request.send();
+    return http.Response.fromStream(response);
+  }
 }

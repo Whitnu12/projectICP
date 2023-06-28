@@ -6,8 +6,8 @@ class Guru {
   final String password;
   final String jabatan;
   final String? fotoProfil;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final int idGuru;
 
   Guru({
@@ -18,8 +18,8 @@ class Guru {
     required this.password,
     required this.jabatan,
     this.fotoProfil,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     required this.idGuru,
   });
 
