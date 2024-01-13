@@ -1,12 +1,9 @@
 import 'package:cobalagi2/screens/second_page.dart';
 import 'package:cobalagi2/screens/tenaga_kependidikan/layout_tenaga.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cobalagi2/model/guruProfile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/guruProfile.dart';
 import '../network/api.dart';
 
 class Login extends StatefulWidget {
@@ -192,11 +189,10 @@ class _LoginState extends State<Login> {
         localStorage.setString('token', jsonResponse['data']['token']);
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
-        localStorage.setString('jabatan', (jsonResponse['data']['jabatan']));
 
         // ignore: use_build_context_synchronously
         String jabatan = jsonResponse['data']['jabatan'];
-        if (jabatan == 'tenaga_kependidikan') {
+        if (jabatan == 'Siswa') {
           // ignore: use_build_context_synchronously
           Navigator.pushReplacement(
             context,

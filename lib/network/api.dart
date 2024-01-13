@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,8 +33,22 @@ class Network {
     };
   }
 
-  Future<http.Response> multipartRequest(http.MultipartRequest request) async {
+  Future<http.Response> sendMultiPartRequest(
+    String apiURL,
+    Map<String, String> fields,
+    List<http.MultipartFile> files,
+  ) async {
+    var fullUrl = '$_baseUrl$apiURL';
+    var request = http.MultipartRequest('POST', Uri.parse(fullUrl));
+    request.headers.addAll(await _setHeaders());
+
+    request.fields.addAll(fields);
+
+    for (var file in files) {
+      request.files.add(file);
+    }
+
     var response = await request.send();
-    return http.Response.fromStream(response);
+    return await http.Response.fromStream(response);
   }
 }

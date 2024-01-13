@@ -46,23 +46,20 @@ class _LaporanKegiatanState extends State<LaporanKegiatan> {
 
     int idGuru = await getIdGuruFromSharedPreference();
 
-    // Create multipart request
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://192.168.100.6/laravel-icp2/public/api/laporan/create'),
-    );
-    // Add text fields to the request
-    request.fields['judul_laporan'] = namaKegiatan;
-    request.fields['deskripsi_laporan'] = deskripsi;
-    request.fields['id_jenis'] = jenisLaporan;
-    request.fields['id_guru'] = idGuru.toString();
-    request.fields['tanggal'] = _selectedDate!;
+    // Prepare request data
+    Map<String, String> fields = {
+      'judul_laporan': namaKegiatan,
+      'deskripsi_laporan': deskripsi,
+      'id_jenis': jenisLaporan,
+      'id_guru': idGuru.toString(),
+      'tanggal': _selectedDate!,
+    };
 
-    // Add image files to the request
+    List<http.MultipartFile> files = [];
     for (var file in _imageFiles) {
       if (file != null) {
         String fileName = path.basename(file.path);
-        request.files.add(await http.MultipartFile.fromPath(
+        files.add(await http.MultipartFile.fromPath(
           'gambar[]',
           file.path,
           filename: fileName,
@@ -74,16 +71,21 @@ class _LaporanKegiatanState extends State<LaporanKegiatan> {
       }
     }
 
-    // Send the request
     try {
-      final response = await Network().multipartRequest(request);
+      final response = await Network().sendMultiPartRequest(
+        '/laporan/create',
+        fields,
+        files,
+      );
+
       if (response.statusCode == 201) {
         // Request successful
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Laporan kegiatan berhasil dikirim'),
-              backgroundColor: Colors.green),
+            content: Text('Laporan kegiatan berhasil dikirim'),
+            backgroundColor: Colors.green,
+          ),
         );
         // Clear form fields and image files
         _namaKegiatanController.clear();

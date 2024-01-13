@@ -1,95 +1,95 @@
-// import 'dart:convert';
-
+import 'dart:convert';
+import 'package:cobalagi2/model/capaian_jam.dart';
 import 'package:flutter/material.dart';
 // import 'package:cobalagi2/network/api.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import '../model/guruProfile.dart';
-// import '../model/jadwalMengajar.dart';
+import '../model/jadwalMengajar.dart';
+import '../network/api.dart';
 import 'detail_mapel.dart';
+import 'teach_page.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class Subject {
-  final String subjectName;
-  final int totalJamDiajar;
-  final int targetJam;
-
-  Subject({
-    required this.subjectName,
-    required this.totalJamDiajar,
-    required this.targetJam,
-  });
-}
-
-class Class {
-  final String mataPelajaran;
-  final String kelas;
-  final TimeOfDay jamMulai;
-  final int jamPelajaran;
-  final String status;
-
-  Class({
-    required this.mataPelajaran,
-    required this.kelas,
-    required this.jamMulai,
-    required this.jamPelajaran,
-    required this.status,
-  });
-
-  TimeOfDay get jamSelesai {
-    int totalMenit = jamMulai.hour * 60 + jamMulai.minute + 45;
-    int jam = totalMenit ~/ 60;
-    int menit = totalMenit % 60;
-    return TimeOfDay(hour: jam, minute: menit);
-  }
-}
-
-final List<Subject> subjects = [
-  Subject(subjectName: 'Teknik Jaringan', totalJamDiajar: 45, targetJam: 60),
-  Subject(subjectName: 'Pemrograman Dasar', totalJamDiajar: 50, targetJam: 60),
-  Subject(subjectName: 'Sistem Operasi', totalJamDiajar: 55, targetJam: 60),
-];
-
-List<Class> classList = [
-  Class(
-    mataPelajaran: 'Matematika Diskrit',
-    kelas: 'XII C',
-    jamMulai: TimeOfDay(hour: 10, minute: 50),
-    jamPelajaran: 2,
-    status: 'akan datang',
-  ),
-  Class(
-    mataPelajaran: 'Jaringan Keamanan Komputer',
-    kelas: 'XII B',
-    jamMulai: TimeOfDay(hour: 12, minute: 30),
-    jamPelajaran: 3,
-    status: 'mengajar',
-  ),
-  Class(
-    mataPelajaran: 'Jaringan Keamanan Komputer',
-    kelas: 'XII D',
-    jamMulai: TimeOfDay(hour: 7, minute: 30),
-    jamPelajaran: 4,
-    status: 'ditinggalkan',
-  ),
-  Class(
-    mataPelajaran: 'Jaringan Keamanan Komputer',
-    kelas: 'XII B',
-    jamPelajaran: 3,
-    jamMulai: TimeOfDay(hour: 14, minute: 30),
-    status: 'mengajar',
-  ),
-];
-
 class _HomeScreenState extends State<HomeScreen> {
+  List<JadwalMengajar> jadwalMengajarList = [];
+  List<CapaianJam> capaianJamList = [];
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
+    getDataJadwalMengajar();
+    getDataCapaianBelajar();
+  }
+
+  Future<int> getIdGuruFromSharedPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int idGuru = prefs.getInt('idGuru') ?? 0;
+    return idGuru;
+  }
+
+  void getDataCapaianBelajar() async {
+    Network network = Network();
+    int idGuru = await getIdGuruFromSharedPreference();
+    idGuru.toString();
+
+    try {
+      http.Response response = await network.getData('/capaian-jam/$idGuru');
+
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        isLoading = false;
+
+        List<CapaianJam> capaianJamData = (responseData['data'] as List)
+            .map((json) => CapaianJam.fromJson(json))
+            .toList();
+
+        setState(() {
+          capaianJamList = capaianJamData;
+        });
+      } else {
+        print(
+            'Gagal mengambil data capaian belajar. Status: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Terjadi kesalahan: $error');
+    }
+  }
+
+  void getDataJadwalMengajar() async {
+    Network network = Network();
+    int idGuru = await getIdGuruFromSharedPreference();
+    idGuru.toString();
+
+    try {
+      http.Response response =
+          await network.getData('/jadwal-mengajar/$idGuru');
+
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        isLoading = false;
+
+        List<JadwalMengajar> jadwalMengajarData = (responseData as List)
+            .map((json) => JadwalMengajar.fromJson(json))
+            .toList();
+
+        setState(() {
+          jadwalMengajarList = jadwalMengajarData;
+          String status = 'Ada';
+        });
+      } else {
+        print(
+            'Gagal mengambil data jadwal mengajar. Status: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Terjadi kesalahan: $error');
+    }
   }
 
   @override
@@ -112,98 +112,127 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(
               height: 160,
-              child: ListView.builder(
-                itemCount: classList.length,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (BuildContext context, int index) {
-                  Class currentClass = classList[index];
-                  bool isDitinggalkan = currentClass.status == 'ditinggalkan';
-
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailMengajar(
-                              kelas: currentClass.kelas,
-                              mataPelajaran: currentClass.mataPelajaran,
-                              jamMulai: currentClass.jamMulai,
-                              jamPelajaran: currentClass.jamPelajaran),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 340,
-                      child: Card(
-                        color: isDitinggalkan
-                            ? Colors.red[100]
-                            : Colors.green[100],
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 30),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          currentClass.mataPelajaran,
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 30),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        currentClass.kelas,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 30),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      '${currentClass.jamMulai.hour.toString().padLeft(2, '0')}:${currentClass.jamMulai.minute.toString().padLeft(2, '0')} - ${currentClass.jamSelesai.hour.toString().padLeft(2, '0')}:${currentClass.jamSelesai.minute.toString().padLeft(2, '0')}',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      ' ${currentClass.status}',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+              child: isLoading
+                  ? Center(
+                      child: Column(children: [
+                      SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 5,
+                          color: Colors.green,
+                          backgroundColor: Colors.grey,
                         ),
                       ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text('Mengajar dimana hari ini?')
+                    ]))
+                  : PageView.builder(
+                      itemCount: jadwalMengajarList.length,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (BuildContext context, int index) {
+                        JadwalMengajar currentClass = jadwalMengajarList[index];
+                        // bool isDitinggalkan = currentClass.status == 'ditinggalkan';
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailMengajar(
+                                  jamBelajar: currentClass.jamBelajar,
+                                  kelas: currentClass.namaKelas,
+                                  mataPelajaran: currentClass.namaMapel,
+                                  jamMulai: currentClass.jamMulai,
+                                  jamSelesai: currentClass.jamSelesai,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width *
+                                      1.0, // Menggunakan 80% lebar layar
+                                  color: Colors.green[100],
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(height: 30),
+                                              Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Text(
+                                                    currentClass.namaMapel,
+                                                    style:
+                                                        TextStyle(fontSize: 20),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: 5),
+                                              Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  currentClass.namaKelas,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: 16),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(height: 30),
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                currentClass.jamMulai,
+                                                style: TextStyle(fontSize: 18),
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                'Segera',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
             SizedBox(
               height: 20,
@@ -219,11 +248,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: subjects.length,
+              itemCount: capaianJamList.length,
               itemBuilder: (BuildContext context, int index) {
-                Subject currentSubject = subjects[index];
+                CapaianJam currentSubject = capaianJamList[index];
                 double progress =
-                    currentSubject.totalJamDiajar / currentSubject.targetJam;
+                    currentSubject.jamTercapai / currentSubject.targetCapaian;
 
                 return Card(
                   child: Container(
@@ -232,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentSubject.subjectName,
+                          currentSubject.namaMapel,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -247,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '${currentSubject.totalJamDiajar} / ${currentSubject.targetJam}',
+                          '${currentSubject.jamTercapai} / ${currentSubject.targetCapaian}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey,

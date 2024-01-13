@@ -5,15 +5,16 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 class DetailMengajar extends StatefulWidget {
   final String kelas;
   final String mataPelajaran;
-  final int jamPelajaran;
-  final TimeOfDay jamMulai;
+  final String jamSelesai;
+  final String jamMulai;
+  final int jamBelajar;
 
-  DetailMengajar({
-    required this.kelas,
-    required this.mataPelajaran,
-    required this.jamPelajaran,
-    required this.jamMulai,
-  });
+  DetailMengajar(
+      {required this.jamBelajar,
+      required this.kelas,
+      required this.mataPelajaran,
+      required this.jamMulai,
+      required this.jamSelesai});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -28,7 +29,7 @@ class _DetailMengajarState extends State<DetailMengajar> {
   bool _isClassLeft = false;
   String _leaveReason = '';
   String get formattedJamMulai {
-    return '${widget.jamMulai.hour.toString().padLeft(2, '0')}:${widget.jamMulai.minute.toString().padLeft(2, '0')}';
+    return '${widget.jamMulai}';
   }
 
   void _showLeaveClassDialog() {
@@ -80,7 +81,7 @@ class _DetailMengajarState extends State<DetailMengajar> {
   }
 
   void _setMaxValue() {
-    _maxValue = widget.jamPelajaran * 45;
+    _maxValue = widget.jamBelajar;
   }
 
   void _startStopwatch() {
@@ -109,7 +110,7 @@ class _DetailMengajarState extends State<DetailMengajar> {
 
   int _getProgressValue() {
     final int progressMinutes = _stopwatch.elapsed.inMinutes;
-    final int totalMinutes = widget.jamPelajaran * 45;
+    final int totalMinutes = widget.jamBelajar * 45;
     return progressMinutes > totalMinutes ? totalMinutes : progressMinutes;
   }
 
@@ -123,7 +124,7 @@ class _DetailMengajarState extends State<DetailMengajar> {
 
   double _getProgressPercent() {
     final int progressMinutes = _getProgressValue();
-    final int totalMinutes = widget.jamPelajaran * 45;
+    final int totalMinutes = widget.jamBelajar * 45;
     return progressMinutes / totalMinutes;
   }
 
