@@ -1,4 +1,4 @@
-import 'package:cobalagi2/screens/tenaga_kependidikan/kelas_tinggal.dart';
+import 'package:cobalagi2/screens/siswa/kelas_tinggal.dart';
 import 'package:flutter/material.dart';
 
 class Class {

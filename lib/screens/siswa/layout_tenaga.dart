@@ -1,5 +1,5 @@
-import 'package:cobalagi2/screens/tenaga_kependidikan/home_tenaga.dart';
-import 'package:cobalagi2/screens/tenaga_kependidikan/tenaga_IsiKelas.dart';
+import 'package:cobalagi2/screens/siswa/home_tenaga.dart';
+import 'package:cobalagi2/screens/siswa/tenaga_IsiKelas.dart';
 import 'package:flutter/material.dart';
 import 'package:cobalagi2/screens/report_page.dart';
 import 'package:cobalagi2/model/guruProfile.dart';

@@ -1,5 +1,5 @@
 import 'package:cobalagi2/screens/second_page.dart';
-import 'package:cobalagi2/screens/tenaga_kependidikan/layout_tenaga.dart';
+import 'package:cobalagi2/screens/siswa/layout_tenaga.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,7 +29,7 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.green[100],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 28, vertical: 72),
@@ -190,20 +190,24 @@ class _LoginState extends State<Login> {
         localStorage.setString(
             'user', json.encode(jsonResponse['data']['user']));
 
-        // ignore: use_build_context_synchronously
-        String jabatan = jsonResponse['data']['jabatan'];
-        if (jabatan == 'Siswa') {
-          // ignore: use_build_context_synchronously
+        String jabatan = jsonResponse['data']['user']['nis_nip'];
+
+        // Panjang yang diharapkan untuk NIS atau NIP
+        int panjangNIS = 5;
+        int panjangNIP = 18;
+
+        if (jabatan.length == panjangNIS) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => TenagaSpace()),
           );
-        } else {
-          // ignore: use_build_context_synchronously
+        } else if (jabatan.length == panjangNIP) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => SecondPage()),
           );
+        } else {
+          _showMsg("Panjang nis_nip tidak sesuai");
         }
       } else {
         _showMsg(jsonResponse['message']);
