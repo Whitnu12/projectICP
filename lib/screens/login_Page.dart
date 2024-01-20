@@ -1,5 +1,6 @@
-import 'package:cobalagi2/screens/second_page.dart';
-import 'package:cobalagi2/screens/siswa/layout_tenaga.dart';
+import 'package:cobalagi2/screens/register_page.dart';
+import 'package:cobalagi2/screens/guru/GuruLayout.dart';
+import 'package:cobalagi2/screens/siswa/Siswa_Layout.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,7 +49,7 @@ class _LoginState extends State<Login> {
                       text: TextSpan(
                         children: const <TextSpan>[
                           TextSpan(
-                            text: ' E-Manage ',
+                            text: ' E-Class ',
                             style: TextStyle(
                               color: Color.fromARGB(255, 42, 133, 45),
                               fontSize: 24,
@@ -126,39 +127,112 @@ class _LoginState extends State<Login> {
                       },
                     ),
                     SizedBox(height: 12),
-                    ElevatedButton(
-                      // ignore: sort_child_properties_last
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 75, vertical: 10),
-                        child: _isLoading
-                            ? CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Text(
-                                'Login',
-                                textDirection: TextDirection.ltr,
-                                style: TextStyle(
+                    SizedBox(
+                      width: 400,
+                      height: 40,
+                      child: ElevatedButton(
+                        // ignore: sort_child_properties_last
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 100, vertical: 10),
+                          child: _isLoading
+                              ? CircularProgressIndicator(
                                   color: Colors.white,
-                                  fontSize: 18.0,
-                                  decoration: TextDecoration.none,
-                                  fontWeight: FontWeight.normal,
+                                )
+                              : Text(
+                                  'Login',
+                                  textDirection: TextDirection.ltr,
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 15.0,
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
-                              ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[500],
-                        foregroundColor: Colors.grey[700],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
                         ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[100],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _login();
+                          }
+                        },
                       ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _login();
-                        }
-                      },
                     ),
+                    SizedBox(height: 12),
+                    SizedBox(
+                      width: 380,
+                      height: 40,
+                      child: ElevatedButton(
+                        // ignore: sort_child_properties_last
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 100, vertical: 10),
+                          child: _isLoading
+                              ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  'Register',
+                                  textDirection: TextDirection.ltr,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15.0,
+                                    decoration: TextDecoration.none,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[400],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => Register()),
+                          );
+                        },
+                      ),
+                    ),
+                    // ElevatedButton(
+                    //   // ignore: sort_child_properties_last
+                    //   child: Padding(
+                    //     padding:
+                    //         EdgeInsets.symmetric(horizontal: 100, vertical: 10),
+                    //     child: _isLoading
+                    //         ? CircularProgressIndicator(
+                    //             color: Colors.white,
+                    //           )
+                    //         : Text(
+                    //             'Register',
+                    //             textDirection: TextDirection.ltr,
+                    //             style: TextStyle(
+                    //               color: Colors.black,
+                    //               fontSize: 15.0,
+                    //               decoration: TextDecoration.none,
+                    //               fontWeight: FontWeight.normal,
+                    //             ),
+                    //           ),
+                    //   ),
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Colors.grey[100],
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(20.0),
+                    //     ),
+                    //   ),
+                    //   onPressed: () {
+                    //     if (_formKey.currentState!.validate()) {
+                    //       _login();
+                    //     }
+                    //   },
+                    // ),
                   ],
                 ),
               )
@@ -170,56 +244,69 @@ class _LoginState extends State<Login> {
   }
 
   void _login() async {
-    setState(() {
-      _isLoading = true;
-    });
+  setState(() {
+    _isLoading = true;
+  });
 
-    var email = _emailController.text;
-    var password = _passwordController.text;
+  var email = _emailController.text;
+  var password = _passwordController.text;
 
-    var data = {'email': email, 'password': password};
+  var data = {'email': email, 'password': password};
 
-    if (email.isNotEmpty && password.isNotEmpty) {
-      var response = await Network().auth(data, '/auth/login');
+  if (email.isNotEmpty && password.isNotEmpty) {
+    var response = await Network().auth(data, '/auth/login');
 
-      var jsonResponse = json.decode(response.body);
+    var jsonResponse = json.decode(response.body);
 
-      if (response.statusCode == 200) {
-        SharedPreferences localStorage = await SharedPreferences.getInstance();
-        localStorage.setString('token', jsonResponse['data']['token']);
-        localStorage.setString(
-            'user', json.encode(jsonResponse['data']['user']));
+    if (response.statusCode == 200) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.setString('token', jsonResponse['data']['token']);
+      localStorage.setString(
+          'user', json.encode(jsonResponse['data']['user']));
 
-        String jabatan = jsonResponse['data']['user']['nis_nip'];
+      String nis_nip = jsonResponse['data']['user']['nis_nip'];
+      String name = jsonResponse['data']['user']['name'];
+      String id = jsonResponse['data']['user']['id'];
 
-        // Panjang yang diharapkan untuk NIS atau NIP
-        int panjangNIS = 5;
-        int panjangNIP = 18;
+      AuthProvider.instance.setAuthData(
+        token: jsonResponse['data']['token'],
+        nisNip: nis_nip,
+        idUser: id
+        name: name,
+      );
 
-        if (jabatan.length == panjangNIS) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => TenagaSpace()),
-          );
-        } else if (jabatan.length == panjangNIP) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => SecondPage()),
-          );
-        } else {
-          _showMsg("Panjang nis_nip tidak sesuai");
-        }
-      } else {
-        _showMsg(jsonResponse['message']);
-        final snackBar = SnackBar(
-          content: Text(jsonResponse['message']),
-          backgroundColor: Colors.red,
+      print('Data pengguna berhasil disimpan di shared preferences.');
+      print('Nama: $name');
+      print('NIS/NIP: $nis_nip');
+
+      // Panjang yang diharapkan untuk NIS atau NIP
+      int panjangNIS = 5;
+      int panjangNIP = 15;
+
+      if (nis_nip.length == panjangNIS) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => TenagaSpace()),
         );
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      } else if (nis_nip.length == panjangNIP) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => GuruLayout()),
+        );
+      } else {
+        _showMsg("Panjang nis_nip tidak sesuai");
       }
+    } else {
+      _showMsg(jsonResponse['message']);
+      final snackBar = SnackBar(
+        content: Text(jsonResponse['message']),
+        backgroundColor: Colors.red,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-    setState(() {
-      _isLoading = false;
-    });
   }
+  setState(() {
+    _isLoading = false;
+  });
+}
 }

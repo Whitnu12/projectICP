@@ -1,7 +1,7 @@
 import 'package:cobalagi2/screens/login_Page.dart';
+import 'package:cobalagi2/screens/guru/GuruLayout.dart';
 import 'package:flutter/material.dart';
-import 'screens/second_page.dart';
-import 'screens/siswa/layout_tenaga.dart';
+import 'screens/siswa/Siswa_Layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 
@@ -34,7 +34,7 @@ class CheckAuth extends StatefulWidget {
 
 class _CheckAuthState extends State<CheckAuth> {
   bool isAuth = false;
-  String? role;
+  String? nis_nip; // Hapus baris ini
 
   @override
   void initState() {
@@ -45,26 +45,29 @@ class _CheckAuthState extends State<CheckAuth> {
   void _checkIfLoggedIn() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var token = localStorage.getString('token');
-    var userRole = localStorage.getString('jabatan');
+    nis_nip =
+        localStorage.getString('nip_nis'); // Hapus var dan gunakan var di sini
 
-    if (token != null && userRole != null) {
+    if (token != null) {
       if (mounted) {
         setState(() {
           isAuth = true;
-          role = userRole;
         });
       }
     }
   }
 
+  int panjangNIS = 5;
+  int panjangNIP = 18;
+
   @override
   Widget build(BuildContext context) {
     Widget child;
     if (isAuth) {
-      if (role == "tenaga_kependidikan") {
+      if (nis_nip?.length == panjangNIS) {
         child = TenagaSpace();
       } else {
-        child = SecondPage();
+        child = GuruLayout();
       }
     } else {
       child = Login();

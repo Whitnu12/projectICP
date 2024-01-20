@@ -1,9 +1,9 @@
-import 'package:cobalagi2/screens/laporan/lprn_kegiatan.dart';
-import 'package:cobalagi2/screens/laporan/lprn_pendidikan.dart';
-import 'package:cobalagi2/screens/laporan/lprn_penugasan.dart';
+// import 'package:cobalagi2/screens/laporan/lprn_kegiatan.dart';
+// import 'package:cobalagi2/screens/laporan/lprn_pendidikan.dart';
+// import 'package:cobalagi2/screens/laporan/lprn_penugasan.dart';
 import 'package:flutter/material.dart';
 
-class ReportPage extends StatelessWidget {
+class MapelDetailSiswa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.count(
@@ -11,32 +11,42 @@ class ReportPage extends StatelessWidget {
       crossAxisCount: 2,
       children: [
         buildCard(
-          icon: Icons.school,
-          name: 'Laporan Pendidikan',
+          icon: Icons.task,
+          name: 'tugas',
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LaporanPendidikan()),
+              MaterialPageRoute(builder: (context) => MapelDetailSiswa()),
             );
           },
         ),
         buildCard(
-          icon: Icons.run_circle_outlined,
-          name: 'Laporan Kegiatan',
+          icon: Icons.quiz,
+          name: 'Quiz',
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LaporanKegiatan()),
+              MaterialPageRoute(builder: (context) => MapelDetailSiswa()),
             );
           },
         ),
         buildCard(
-          icon: Icons.article,
-          name: 'Laporan Penugasan',
+          icon: Icons.person,
+          name: 'Presensi',
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LaporanPenugasan()),
+              MaterialPageRoute(builder: (context) => MapelDetailSiswa()),
+            );
+          },
+        ),
+        buildCard(
+          icon: Icons.chat,
+          name: 'Forum Chat',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MapelDetailSiswa()),
             );
           },
         ),
