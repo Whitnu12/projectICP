@@ -1,4 +1,3 @@
-import 'package:cobalagi2/screens/siswa/Siswa_List_Mapel.dart';
 import 'package:flutter/material.dart';
 
 class HomeSiswa extends StatefulWidget {
@@ -9,9 +8,6 @@ class HomeSiswa extends StatefulWidget {
 }
 
 class _HomeSiswaState extends State<HomeSiswa> {
-  bool _isClassLeft = true;
-  String _leaveReason = 'Ada Rapat Pusat di Jakarta';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

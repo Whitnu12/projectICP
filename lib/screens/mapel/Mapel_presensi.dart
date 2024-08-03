@@ -236,26 +236,18 @@ class _MapelPresensiState extends State<MapelPresensi> {
   }
 
   IconData _getStatusIcon(String status) {
-    Color iconColor;
-
     switch (status.toLowerCase()) {
       case 'hadir':
-        iconColor = Colors.green;
         return Icons.check;
       case 'sakit':
-        iconColor = Colors.yellow;
         return Icons.sick;
       case 'izin':
-        iconColor = Colors.blue;
         return Icons.access_time;
       case 'alpa':
-        iconColor = Colors.red;
         return Icons.close;
       case 'bolos':
-        iconColor = Colors.black;
         return Icons.cancel;
       default:
-        iconColor = Colors.grey; // Warna default untuk status tidak dikenal
         return Icons.help;
     }
   }

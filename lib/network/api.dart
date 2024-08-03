@@ -15,6 +15,32 @@ class Network {
     );
   }
 
+  Future<Map<String, dynamic>> buatMapel({
+    required String namaMapel,
+    required String enrollCode,
+    required String idUser,
+  }) async {
+    var fullUrl = '$_baseUrl/mata-pelajaran/add';
+    var headers = await _setHeaders();
+
+    // Konversi idUser ke integer
+    int idGuru = int.parse(idUser);
+
+    var data = {
+      'nama_mapel': namaMapel,
+      'enroll_code': enrollCode,
+      'idUser': idGuru, // Menggunakan id_guru yang sudah diubah ke integer
+    };
+
+    var response = await http.post(
+      Uri.parse(fullUrl),
+      body: jsonEncode(data),
+      headers: headers,
+    );
+
+    return jsonDecode(response.body);
+  }
+
   Future<http.Response> getData(String apiURL) async {
     var fullUrl = '$_baseUrl$apiURL';
     return await http.get(

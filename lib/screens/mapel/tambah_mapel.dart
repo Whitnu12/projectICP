@@ -1,3 +1,5 @@
+import 'package:cobalagi2/network/api.dart';
+import 'package:cobalagi2/util/AuthProvider.dart';
 import 'package:flutter/material.dart';
 
 class TambahMapel extends StatefulWidget {
@@ -9,8 +11,6 @@ class TambahMapel extends StatefulWidget {
 
 class _TambahMapelState extends State<TambahMapel> {
   final TextEditingController _namaMapelController = TextEditingController();
-  final TextEditingController _deskripsiMapelController =
-      TextEditingController();
   final TextEditingController _enrollCodeController = TextEditingController();
 
   @override
@@ -43,11 +43,6 @@ class _TambahMapelState extends State<TambahMapel> {
                   TextField(
                     controller: _namaMapelController,
                     decoration: InputDecoration(labelText: 'Nama Mapel'),
-                  ),
-                  SizedBox(height: 16.0),
-                  TextField(
-                    controller: _deskripsiMapelController,
-                    decoration: InputDecoration(labelText: 'Deskripsi Mapel'),
                   ),
                   SizedBox(height: 16.0),
                   TextField(
@@ -87,40 +82,46 @@ class _TambahMapelState extends State<TambahMapel> {
   }
 
   void _buatMapel(BuildContext context) {
-  // Mengambil informasi guru yang sedang login
-  String idGuru = AuthProvider.instance.idUser;
-  String namaGuru = AuthProvider.instance.namaGuru;
+    // Mengambil informasi guru yang sedang login
+    String idUser = AuthProvider.instance.idUser;
 
-  String namaMapel = _namaMapelController.text;
-  String deskripsiMapel = _deskripsiMapelController.text;
-  String enrollCode = _enrollCodeController.text;
+    String namaMapel = _namaMapelController.text;
+    String enrollCode = _enrollCodeController.text;
 
-  // Memastikan semua data yang diperlukan tersedia
-  if (namaMapel.isNotEmpty && enrollCode.isNotEmpty) {
-    // Membuat permintaan API untuk menambahkan mata pelajaran
-    ApiService().buatMapel(
-      namaMapel: namaMapel,
-      deskripsiMapel: deskripsiMapel,
-      enrollCode: enrollCode,
-      id: idUser,
-      namaGuru: namaGuru,
-    ).then((response) {
-      // Memproses respons dari permintaan API
-      if (response['status'] == 'success') {
-        // Jika sukses, kembali ke halaman sebelumnya
-        Navigator.pop(context);
-      } else {
-        // Jika gagal, tampilkan pesan kesalahan
+    // Memastikan semua data yang diperlukan tersedia
+    if (namaMapel.isNotEmpty && enrollCode.isNotEmpty) {
+      // Membuat permintaan API untuk menambahkan mata pelajaran
+      Network()
+          .buatMapel(
+        namaMapel: namaMapel,
+        enrollCode: enrollCode,
+        idUser: idUser,
+      )
+          .then((response) {
+        // Memproses respons dari permintaan API
+        if (response.containsKey('status') && response['status'] == 'success') {
+          // Jika sukses, kembali ke halaman sebelumnya
+          Navigator.pop(context);
+        } else {
+          // Jika gagal, tampilkan pesan kesalahan
+          String errorMessage = response.containsKey('message')
+              ? response['message']
+              : 'Terjadi kesalahan tanpa pesan detail.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
+      }).catchError((error) {
+        // Menampilkan pesan jika terjadi kesalahan dalam permintaan API
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'])),
+          SnackBar(content: Text('Terjadi kesalahan dalam permintaan API')),
         );
-      }
-    });
-  } else {
-    // Menampilkan pesan jika data tidak lengkap
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Semua kolom harus diisi')),
-    );
+      });
+    } else {
+      // Menampilkan pesan jika data tidak lengkap
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Semua kolom harus diisi')),
+      );
+    }
   }
-}
 }

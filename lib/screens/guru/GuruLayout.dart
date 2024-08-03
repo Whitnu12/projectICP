@@ -1,4 +1,5 @@
-import 'package:cobalagi2/screens/mapel/Mapel_guru.dart';
+import 'package:cobalagi2/screens/mapel/Mapel_List.dart';
+import 'package:cobalagi2/util/AuthProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:cobalagi2/screens/guru/GuruHome.dart';
 // import 'package:cobalagi2/screens/report_page.dart';
@@ -99,6 +100,10 @@ class _GuruLayoutState extends State<GuruLayout> {
     });
   }
 
+  String idUser = AuthProvider.instance.idUser;
+  String namaGuru = AuthProvider.instance.name;
+  String nisNip = AuthProvider.instance.nisNip;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,12 +123,12 @@ class _GuruLayoutState extends State<GuruLayout> {
                 height: 10,
               ),
               Text(
-                'Feriyati S.Pd',
+                namaGuru,
                 style: TextStyle(color: Colors.black, fontSize: 22),
               ),
               SizedBox(height: 5),
               Text(
-                '${'5700411128839910'} | ${'Guru'}',
+                '${nisNip} | ${'Guru'}',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,

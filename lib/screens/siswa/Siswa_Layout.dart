@@ -1,6 +1,7 @@
-import 'dart:convert';
 import 'package:cobalagi2/model/guruProfile.dart';
 import 'package:cobalagi2/screens/siswa/Siswa_List_Mapel.dart';
+import 'package:cobalagi2/screens/siswa/Siswa_presensi.dart';
+import 'package:cobalagi2/util/AuthProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:cobalagi2/screens/login_Page.dart';
 import 'package:cobalagi2/screens/siswa/Siswa_Home.dart';
@@ -23,27 +24,11 @@ class _TenagaSpaceState extends State<TenagaSpace> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
   }
 
-  void _loadUserData() async {
-    try {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      String? userDataJson = localStorage.getString('user');
-
-      if (userDataJson != null) {
-        var userData = jsonDecode(userDataJson);
-
-        if (userData['data'] != null && userData['data']['user'] != null) {
-          setState(() {
-            userProfile = User.fromJson(userData['data']['user']);
-          });
-        }
-      }
-    } catch (e) {
-      print('Failed to load user data: $e');
-    }
-  }
+  String idUser = AuthProvider.instance.idUser;
+  String namaGuru = AuthProvider.instance.name;
+  String nisNip = AuthProvider.instance.nisNip;
 
   void onTabTapped(int index) {
     setState(() {
@@ -68,12 +53,12 @@ class _TenagaSpaceState extends State<TenagaSpace> {
                 height: 10,
               ),
               Text(
-                'Adimas',
+                namaGuru,
                 style: TextStyle(color: Colors.black, fontSize: 22),
               ),
               SizedBox(height: 5),
               Text(
-                '17214 | Siswa',
+                '${nisNip} | Siswa',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,
@@ -154,20 +139,42 @@ class _TenagaSpaceState extends State<TenagaSpace> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Color.fromARGB(255, 216, 243, 220),
         onTap: onTabTapped,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         unselectedItemColor: Colors.green[500],
         fixedColor: Colors.green[900],
         currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
+            label: 'coba',
+            icon: const ImageIcon(
+              AssetImage(
+                "assets/images/house-blank.png",
+              ),
+            ),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'Laporan',
-          ),
+              icon: const ImageIcon(
+                AssetImage(
+                  "assets/images/book-alt.png",
+                ),
+              ),
+              label: ''),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green[50],
+        shape: const CircleBorder(),
+        elevation: 10.0,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SiswaPresensi()),
+          );
+        },
+        child: Icon(Icons.qr_code_scanner_rounded),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 

@@ -47,12 +47,13 @@ class _SiswaMapelListState extends State<SiswaMapelList> {
                 );
               },
               title: Text(
-                'IPAS-XI TKJ 1',
+                'Mulok-X TKJ 1',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 21,
                 ),
               ),
+              subtitle: Text('Zainal Abidin,S.Pdi'),
               trailing: Container(
                 width: 12,
                 height: 12,
@@ -72,20 +73,13 @@ class _SiswaMapelListState extends State<SiswaMapelList> {
                 );
               },
               title: Text(
-                'IPAS-XII TKJ 1',
+                'Bahasa Inggris -X TKJ 1',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 21,
                 ),
               ),
-              trailing: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.green,
-                ),
-              ),
+              subtitle: Text('Sukijo,S.Pd.Ing'),
             ),
           ),
           Card(
@@ -103,14 +97,7 @@ class _SiswaMapelListState extends State<SiswaMapelList> {
                   fontSize: 21,
                 ),
               ),
-              trailing: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.green,
-                ),
-              ),
+              subtitle: Text('Feriyati,S.Pd'),
             ),
           ),
         ],

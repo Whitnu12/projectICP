@@ -124,9 +124,6 @@ class _TambahTugasState extends State<TambahTugas> {
   }
 
   void _TambahTugas(BuildContext context) {
-    String namaMapel = _namaMapelController.text;
-    String deskripsiMapel = _deskripsiMapelController.text;
-
     // Lakukan apa pun yang diperlukan dengan data yang telah diambil
     // Misalnya, kirim data ini ke backend atau lakukan validasi lainnya
 

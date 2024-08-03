@@ -1,6 +1,7 @@
 import 'package:cobalagi2/screens/register_page.dart';
 import 'package:cobalagi2/screens/guru/GuruLayout.dart';
 import 'package:cobalagi2/screens/siswa/Siswa_Layout.dart';
+import 'package:cobalagi2/util/AuthProvider.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -244,69 +245,77 @@ class _LoginState extends State<Login> {
   }
 
   void _login() async {
-  setState(() {
-    _isLoading = true;
-  });
+    setState(() {
+      _isLoading = true;
+    });
 
-  var email = _emailController.text;
-  var password = _passwordController.text;
+    var email = _emailController.text;
+    var password = _passwordController.text;
 
-  var data = {'email': email, 'password': password};
+    var data = {'email': email, 'password': password};
 
-  if (email.isNotEmpty && password.isNotEmpty) {
-    var response = await Network().auth(data, '/auth/login');
+    if (email.isNotEmpty && password.isNotEmpty) {
+      try {
+        var response = await Network().auth(data, '/auth/login');
 
-    var jsonResponse = json.decode(response.body);
+        var jsonResponse = json.decode(response.body);
 
-    if (response.statusCode == 200) {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      localStorage.setString('token', jsonResponse['data']['token']);
-      localStorage.setString(
-          'user', json.encode(jsonResponse['data']['user']));
+        if (response.statusCode == 200) {
+          SharedPreferences localStorage =
+              await SharedPreferences.getInstance();
+          localStorage.setString('token', jsonResponse['data']['token']);
+          localStorage.setString(
+              'user', json.encode(jsonResponse['data']['user']));
 
-      String nis_nip = jsonResponse['data']['user']['nis_nip'];
-      String name = jsonResponse['data']['user']['name'];
-      String id = jsonResponse['data']['user']['id'];
+          String nis_nip = jsonResponse['data']['user']['nis_nip'];
+          String name = jsonResponse['data']['user']['name'];
+          String id = jsonResponse['data']['user']['id'].toString();
 
-      AuthProvider.instance.setAuthData(
-        token: jsonResponse['data']['token'],
-        nisNip: nis_nip,
-        idUser: id
-        name: name,
-      );
+          AuthProvider.instance.setAuthData(
+            token: jsonResponse['data']['token'],
+            nisNip: nis_nip,
+            idUser: id,
+            name: name,
+          );
 
-      print('Data pengguna berhasil disimpan di shared preferences.');
-      print('Nama: $name');
-      print('NIS/NIP: $nis_nip');
+          print('Data pengguna berhasil disimpan di shared preferences.');
+          print('Nama: $name');
+          print('NIS/NIP: $nis_nip');
 
-      // Panjang yang diharapkan untuk NIS atau NIP
-      int panjangNIS = 5;
-      int panjangNIP = 15;
+          // Panjang yang diharapkan untuk NIS atau NIP
+          int panjangNIS = 5;
+          int panjangNIP = 15;
 
-      if (nis_nip.length == panjangNIS) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => TenagaSpace()),
-        );
-      } else if (nis_nip.length == panjangNIP) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => GuruLayout()),
-        );
-      } else {
-        _showMsg("Panjang nis_nip tidak sesuai");
+          if (nis_nip.length == panjangNIS) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => TenagaSpace()),
+            );
+          } else if (nis_nip.length == panjangNIP) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => GuruLayout()),
+            );
+          } else {
+            _showMsg("Panjang nis_nip tidak sesuai");
+          }
+        } else {
+          _showMsg(jsonResponse['message']);
+          final snackBar = SnackBar(
+            content: Text(jsonResponse['message']),
+            backgroundColor: Colors.red,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
+      } catch (error) {
+        // Handle connection error
+        _showMsg("Tidak ada koneksi internet");
+      } finally {
+        // Stop loading in case of error
+        setState(() {
+          _isLoading = false;
+        });
       }
-    } else {
-      _showMsg(jsonResponse['message']);
-      final snackBar = SnackBar(
-        content: Text(jsonResponse['message']),
-        backgroundColor: Colors.red,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
-  setState(() {
-    _isLoading = false;
-  });
-}
 }

@@ -2,7 +2,6 @@ import 'package:cobalagi2/screens/mapel/Mapel_Chat.dart';
 import 'package:cobalagi2/screens/mapel/Mapel_Quiz.dart';
 import 'package:cobalagi2/screens/mapel/Mapel_Tambah_Tugas.dart';
 import 'package:cobalagi2/screens/mapel/Mapel_presensi.dart';
-import 'package:cobalagi2/screens/mapel/tambah_mapel.dart';
 import 'package:flutter/material.dart';
 
 class MapelDetail extends StatefulWidget {
@@ -11,12 +10,6 @@ class MapelDetail extends StatefulWidget {
 }
 
 class _MapelDetailState extends State<MapelDetail> {
-  int _currentIndex = 0;
-  final List<Widget> _children = [
-    TambahMapel(),
-    TambahTugas(),
-    MapelPresensi()
-  ];
 
   @override
   Widget build(BuildContext context) {

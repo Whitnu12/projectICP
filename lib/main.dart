@@ -15,11 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'splash screen',
       home: AnimatedSplashScreen(
-        splash: Image.asset('assets/images/Logo-1.png'),
+        splash: Image.asset('assets/images/E-Management (6).png'),
         splashIconSize: 530,
         duration: 3000,
         splashTransition: SplashTransition.fadeTransition,
-        backgroundColor: Colors.green.shade100,
+        backgroundColor: Colors.white,
         nextScreen: CheckAuth(),
       ),
       debugShowCheckedModeBanner: false,
